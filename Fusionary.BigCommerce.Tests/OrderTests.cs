@@ -163,6 +163,55 @@ public class OrderTests : BcTestBase
         Assert.That(result.Success, Is.True);
     }
 
+    [Test]
+    public async Task Can_Get_Cart_Async()
+    {
+        var bc = Services.GetRequiredService<IBcApi>();
+
+        var cancellationToken = CancellationToken.None;
+
+        var result = await bc
+            .Carts()
+            .Cart().Get().SendAsync("472abc00-7343-4e5a-9c31-d4f0276093d9", cancellationToken);
+
+        DumpObject(result);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task Can_Get_CartRedirects_Async()
+    {
+        var bc = Services.GetRequiredService<IBcApi>();
+
+        var cancellationToken = CancellationToken.None;
+        var empty = new BcCartRedirectQueryParms();
+        var result = await bc
+            .Carts()
+            .Cart().GetCartRedirects().SendAsync("fe057e11-8e99-4e6b-9b0c-347474af8b20", empty, cancellationToken);
+
+        DumpObject(result);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task Can_Delete_Cart_Line_Async()
+    {
+        var bc = Services.GetRequiredService<IBcApi>();
+
+        var cancellationToken = CancellationToken.None;
+
+        var result = await bc
+            .Carts()
+            .Cart().DeleteLineItem().SendAsync("472abc00-7343-4e5a-9c31-d4f0276093d9", "794e2dce-ac8c-4e71-b586-978afe423381", cancellationToken);
+
+        DumpObject(result);
+         
+        Assert.Pass();
+    }
 
     [Test]
     public async Task Can_Get_All_Orders_Async()

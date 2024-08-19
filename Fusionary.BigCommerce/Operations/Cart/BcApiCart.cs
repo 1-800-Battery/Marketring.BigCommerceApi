@@ -2,6 +2,7 @@ namespace Fusionary.BigCommerce.Operations;
 
 public class BcApiCart(IBcApi api) : IBcApiOperation
 {
+    public BcApiCartGetCheckoutURLs GetCartRedirects() => new(api);
     public BcApiCartLineAdd AddLineItem() => new(api);
     public BcApiCartUpdateLine UpdateLineItem() => new(api);
     public BcApiCartDeleteItem DeleteLineItem() => new(api);
