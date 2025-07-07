@@ -48,6 +48,10 @@ jobs:
       run: dotnet build --configuration Release --no-restore
       
     - name: Test
+      env:
+        BigCommerce__StoreHash: ${{ secrets.BIGCOMMERCE_STORE_HASH }}
+        BigCommerce__AccessToken: ${{ secrets.BIGCOMMERCE_ACCESS_TOKEN }}
+        BigCommerce__Host: ${{ secrets.BIGCOMMERCE_HOST }}
       run: dotnet test --configuration Release --no-build --verbosity normal --logger trx --results-directory "TestResults-${{ github.run_number }}"
       
     - name: Upload test results
