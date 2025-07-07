@@ -1,11 +1,8 @@
 namespace Fusionary.BigCommerce.Operations;
 
-public class BcApiCartDelete : BcRequestBuilder, IBcApiOperation
+public class BcApiCartDelete(IBcApi api) : BcRequestBuilder(api), IBcApiOperation
 {
-    public BcApiCartDelete(IBcApi api) : base(api)
-    { }
-
-    public async Task<BcResult> SendAsync<TProduct>(string cartId, CancellationToken cancellationToken = default) =>
+    public async Task<BcResult> SendAsync(string cartId, CancellationToken cancellationToken = default) =>
         await Api.DeleteAsync(
             BcEndpoint.CartV3(cartId),
             Filter,

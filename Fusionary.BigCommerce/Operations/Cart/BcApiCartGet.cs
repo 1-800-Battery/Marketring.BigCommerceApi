@@ -1,10 +1,7 @@
 namespace Fusionary.BigCommerce.Operations;
 
-public class BcApiCartGet : BcRequestBuilder, IBcApiOperation
+public class BcApiCartGet(IBcApi api) : BcRequestBuilder(api), IBcApiOperation
 {
-    public BcApiCartGet(IBcApi api) : base(api)
-    { }
-
     public Task<BcResultData<BcCartResponseFull>> SendAsync(
         string cartId,
         CancellationToken cancellationToken = default

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fusionary.BigCommerce.Types
 {
-    public record BcCartLineItem : IExtensionData
+    public record BcCartLineItem : IBcExtensionData
     {
 
 

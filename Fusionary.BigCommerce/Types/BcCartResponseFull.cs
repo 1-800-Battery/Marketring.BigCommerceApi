@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Fusionary.BigCommerce.Types
 {
 
-    public record BcCartResponseFull : IExtensionData
+    public record BcCartResponseFull : IBcExtensionData
     {
         [JsonPropertyName("id")]
         public string? Id { get; set; }

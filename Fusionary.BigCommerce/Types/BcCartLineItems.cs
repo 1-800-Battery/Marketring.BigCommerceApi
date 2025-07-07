@@ -10,7 +10,7 @@ using System.Globalization;
 
 namespace Fusionary.BigCommerce.Types
 {
-    public record BcCartLineItems : IExtensionData
+    public record BcCartLineItems : IBcExtensionData
     {
 
        

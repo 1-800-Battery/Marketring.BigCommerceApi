@@ -8,7 +8,7 @@ using static Fusionary.BigCommerce.Types.BcCartLineItems;
 
 namespace Fusionary.BigCommerce.Types
 {
-    public record BcCartPost : IExtensionData
+    public record BcCartPost : IBcExtensionData
     {
         [JsonPropertyName("customer_id")]
         public long? CustomerId { get; set; }

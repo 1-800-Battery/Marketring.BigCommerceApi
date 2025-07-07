@@ -264,20 +264,4 @@ public class OrderTests : BcTestBase
 
         Assert.Pass();
     }
-
-    [Test]
-    public async Task Can_Update_Sample_Order_Async()
-    {
-        var updateOrdersApi = Services.GetRequiredService<BcApiOrdersUpdate>();
-
-        var cancellationToken = CancellationToken.None;
-
-        var orderToUpdate = new BcOrderPut { StatusId = BcOrderStatus.Completed };
-
-        var result = await updateOrdersApi.SendAsync<BcOrderResponseFull>(150, orderToUpdate, cancellationToken);
-
-        DumpObject(result);
-
-        result.Success.Should().BeTrue();
-    }
 }

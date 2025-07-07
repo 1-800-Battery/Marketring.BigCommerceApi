@@ -1,11 +1,9 @@
-namespace Fusionary.BigCommerce.Operations
-{
-    public class BcApiCartDeleteItem : BcRequestBuilder, IBcApiOperation
-    {
-        public BcApiCartDeleteItem(IBcApi api) : base(api)
-        { }
+namespace Fusionary.BigCommerce.Operations;
 
-        public async Task<Object> SendAsync(
+public class BcApiCartDeleteItem(IBcApi api) : BcRequestBuilder(api), IBcApiOperation
+{
+
+        public async Task<BcResult> SendAsync(
             string cartId,
             string lineId,
             CancellationToken cancellationToken = default)
@@ -55,7 +53,4 @@ namespace Fusionary.BigCommerce.Operations
              return deleteResult; // return 400 Bad Request
             
         }
-          
-        }
-    
 }
