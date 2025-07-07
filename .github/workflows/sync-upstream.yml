@@ -1,0 +1,151 @@
+name: Sync with Upstream
+
+on:
+  # Run weekly on Mondays at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * 1'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      sync_branch:
+        description: 'Branch to sync with upstream'
+        required: false
+        default: 'main'
+        type: string
+
+jobs:
+  sync:
+    name: Sync with Upstream Fusionary
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+        ref: ${{ github.event.inputs.sync_branch || 'main' }}
+        
+    - name: Configure git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: Add upstream remote
+      run: |
+        git remote add upstream https://github.com/fusionary/Fusionary.BigCommerceApi.git || true
+        git remote -v
+        
+    - name: Fetch upstream
+      run: git fetch upstream
+      
+    - name: Check for differences
+      id: check
+      run: |
+        UPSTREAM_COMMIT=$(git rev-parse upstream/${{ github.event.inputs.sync_branch || 'main' }})
+        LOCAL_COMMIT=$(git rev-parse HEAD)
+        
+        if [ "$UPSTREAM_COMMIT" = "$LOCAL_COMMIT" ]; then
+          echo "No changes to sync"
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "Changes detected"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "upstream_commit=$UPSTREAM_COMMIT" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create sync branch
+      if: steps.check.outputs.has_changes == 'true'
+      run: |
+        BRANCH_NAME="sync/upstream-$(date +%Y%m%d-%H%M%S)"
+        git checkout -b $BRANCH_NAME
+        echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
+        
+    - name: Merge upstream changes
+      if: steps.check.outputs.has_changes == 'true'
+      id: merge
+      run: |
+        git merge upstream/${{ github.event.inputs.sync_branch || 'main' }} --no-edit || {
+          echo "merge_conflict=true" >> $GITHUB_OUTPUT
+          git merge --abort
+          exit 0
+        }
+        echo "merge_conflict=false" >> $GITHUB_OUTPUT
+        
+    - name: Push sync branch
+      if: steps.check.outputs.has_changes == 'true' && steps.merge.outputs.merge_conflict == 'false'
+      run: |
+        git push origin ${{ env.branch_name }}
+        
+    - name: Create Pull Request
+      if: steps.check.outputs.has_changes == 'true' && steps.merge.outputs.merge_conflict == 'false'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ env.branch_name }}
+        title: '🔄 Sync with upstream Fusionary'
+        body: |
+          ## Automated Upstream Sync
+          
+          This PR syncs our fork with the latest changes from [fusionary/Fusionary.BigCommerceApi](https://github.com/fusionary/Fusionary.BigCommerceApi).
+          
+          ### Changes
+          - Upstream commit: ${{ steps.check.outputs.upstream_commit }}
+          - Auto-merged: ✅
+          
+          ### Next Steps
+          1. Review the changes
+          2. Run tests to ensure Cart API compatibility
+          3. Merge when ready
+          
+          ---
+          *This PR was created automatically by the sync workflow.*
+        labels: |
+          upstream-sync
+          automated
+        
+    - name: Create conflict issue
+      if: steps.check.outputs.has_changes == 'true' && steps.merge.outputs.merge_conflict == 'true'
+      uses: peter-evans/create-issue@v4
+      with:
+        title: '⚠️ Upstream sync requires manual intervention'
+        body: |
+          ## Manual Sync Required
+          
+          The automated sync with [fusionary/Fusionary.BigCommerceApi](https://github.com/fusionary/Fusionary.BigCommerceApi) has detected merge conflicts.
+          
+          ### Action Required
+          
+          Please manually sync the upstream changes:
+          
+          ```bash
+          git checkout main
+          git fetch upstream
+          git merge upstream/main
+          # Resolve conflicts
+          git push origin main
+          ```
+          
+          ### Upstream Reference
+          - Commit: ${{ steps.check.outputs.upstream_commit }}
+          - Branch: ${{ github.event.inputs.sync_branch || 'main' }}
+          
+          ---
+          *This issue was created automatically by the sync workflow.*
+        labels: |
+          upstream-sync
+          merge-conflict
+          needs-attention
+          
+    - name: Summary
+      run: |
+        if [ "${{ steps.check.outputs.has_changes }}" = "false" ]; then
+          echo "### ✅ Already up to date with upstream" >> $GITHUB_STEP_SUMMARY
+        elif [ "${{ steps.merge.outputs.merge_conflict }}" = "true" ]; then
+          echo "### ⚠️ Merge conflicts detected" >> $GITHUB_STEP_SUMMARY
+          echo "Manual intervention required. An issue has been created." >> $GITHUB_STEP_SUMMARY
+        else
+          echo "### 🔄 Sync PR created" >> $GITHUB_STEP_SUMMARY
+          echo "Review and merge the PR to complete the sync." >> $GITHUB_STEP_SUMMARY
+        fi

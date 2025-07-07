@@ -1,0 +1,252 @@
+name: Build and Publish Marketring.BigCommerce
+
+on:
+  # Manual trigger with version input
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.2.0 or 1.2.0-preview.1)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a pre-release?'
+        required: true
+        type: boolean
+        default: false
+        
+  # Automated trigger on version tags with 'marketring-' prefix
+  push:
+    tags:
+      - 'marketring-v[0-9]+.[0-9]+.[0-9]+*'
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
+  NUGET_SOURCE_URL: 'https://nuget.pkg.github.com/1-800-Battery/index.json'
+  PACKAGE_ID: 'Marketring.BigCommerce'
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Required for MinVer
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+      
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal --logger trx --results-directory "TestResults-${{ github.run_number }}"
+      
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: TestResults-${{ github.run_number }}/*.trx
+        retention-days: 7
+      
+  package:
+    name: Create NuGet Package
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/marketring-v'))
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      package-name: ${{ steps.version.outputs.package-name }}
+      package-file: ${{ steps.version.outputs.package-file }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Required for MinVer
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Determine version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        else
+          # Extract version from tag (remove 'marketring-v' prefix)
+          VERSION=${GITHUB_REF#refs/tags/marketring-v}
+        fi
+        PACKAGE_FILE="${{ env.PACKAGE_ID }}.${VERSION}.nupkg"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "package-name=${{ env.PACKAGE_ID }}" >> $GITHUB_OUTPUT
+        echo "package-file=$PACKAGE_FILE" >> $GITHUB_OUTPUT
+        echo "📦 Version: $VERSION"
+        echo "📁 Package: $PACKAGE_FILE"
+        
+    - name: Create output directory
+      run: mkdir -p ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+        
+    - name: Pack NuGet package
+      run: |
+        dotnet pack Fusionary.BigCommerce/Fusionary.BigCommerce.csproj \
+          --configuration Release \
+          --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }} \
+          --no-build \
+          -p:PackageVersion=${{ steps.version.outputs.version }} \
+          -p:PackageId=${{ steps.version.outputs.package-name }} \
+          -p:Title="Marketring.BigCommerce" \
+          -p:Description="BigCommerce API client with Cart API - Internal Marketring Build" \
+          -p:PackageTags="dotnet,bigcommerce,cart,marketring" \
+          -p:Authors="Marketring" \
+          -p:PackageProjectUrl="https://github.com/1-800-Battery/Marketring.BigCommerceApi" \
+          -p:RepositoryUrl="https://github.com/1-800-Battery/Marketring.BigCommerceApi" \
+          -p:PackageIconUrl="https://raw.githubusercontent.com/1-800-Battery/Marketring.BigCommerceApi/main/icon.png"
+          
+    - name: Verify package created
+      run: |
+        ls -la ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/
+        if [ ! -f "${{ env.PACKAGE_OUTPUT_DIRECTORY }}/${{ steps.version.outputs.package-file }}" ]; then
+          echo "❌ Expected package file not found!"
+          exit 1
+        fi
+        echo "✅ Package created successfully: ${{ steps.version.outputs.package-file }}"
+        
+    - name: Upload package artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.nupkg
+        retention-days: 30
+        
+  publish-github:
+    name: Publish to GitHub Packages
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Download package artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: nuget-package
+        path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+        
+    - name: Configure NuGet source
+      run: |
+        dotnet nuget add source ${{ env.NUGET_SOURCE_URL }} \
+          --name "github" \
+          --username ${{ github.repository_owner }} \
+          --password ${{ secrets.GITHUB_TOKEN }} \
+          --store-password-in-clear-text
+        
+    - name: Publish to GitHub Packages
+      run: |
+        echo "🚀 Publishing package to GitHub Packages..."
+        dotnet nuget push "${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.nupkg" \
+          --source "github" \
+          --api-key ${{ secrets.GITHUB_TOKEN }} \
+          --skip-duplicate
+        echo "✅ Package published successfully!"
+        
+  create-release:
+    name: Create GitHub Release
+    needs: [package, publish-github]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/marketring-v')
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download package artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: nuget-package
+        path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+        
+    - name: Create Release Notes
+      id: release-notes
+      run: |
+        VERSION="${{ needs.package.outputs.version }}"
+        cat > release-notes.md << EOF
+        ## Marketring.BigCommerce v${VERSION}
+        
+        Internal build of BigCommerce API client with enhanced Cart API functionality.
+        
+        ### Package Details
+        - **Package ID**: ${{ needs.package.outputs.package-name }}
+        - **Version**: ${VERSION}
+        - **Framework**: .NET 8.0
+        
+        ### Installation
+        \`\`\`bash
+        dotnet add package ${{ needs.package.outputs.package-name }} --version ${VERSION} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+        \`\`\`
+        
+        ### What's Included
+        - Full BigCommerce API client functionality
+        - Enhanced Cart API operations
+        - C# 12 primary constructor patterns
+        - NUnit test framework support
+        
+        ### Cart API Features
+        - Create and manage shopping carts
+        - Add, update, and remove line items
+        - Update customer information
+        - Full CRUD operations with BigCommerce v3 Cart API
+        EOF
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: marketring-v${{ needs.package.outputs.version }}
+        name: Marketring.BigCommerce v${{ needs.package.outputs.version }}
+        draft: false
+        prerelease: ${{ contains(needs.package.outputs.version, '-') }}
+        body_path: release-notes.md
+        files: |
+          ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.nupkg
+        make_latest: true
+        
+  notify-success:
+    name: Notify Success
+    needs: [package, publish-github, create-release]
+    runs-on: ubuntu-latest
+    if: always() && needs.publish-github.result == 'success'
+    
+    steps:
+    - name: Summary
+      run: |
+        echo "## 🎉 Package Published Successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Package Details" >> $GITHUB_STEP_SUMMARY
+        echo "- **Name**: ${{ needs.package.outputs.package-name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: ${{ needs.package.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Package URL**: https://github.com/${{ github.repository }}/packages" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Package is available in GitHub Packages" >> $GITHUB_STEP_SUMMARY
+        echo "2. Add package source: \`https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json\`" >> $GITHUB_STEP_SUMMARY
+        echo "3. Install with: \`dotnet add package ${{ needs.package.outputs.package-name }} --version ${{ needs.package.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
