@@ -138,6 +138,14 @@ Tests use NUnit framework with FluentAssertions for readable assertions and Bogu
 - CI workflows use `-- NUnit.ExplicitIncludes=false` to skip explicit tests
 - This prevents timeout issues in both local development and CI environments
 
+**Customer Group Test Issues**: Customer group tests fail with "Error reading response" during JSON deserialization. This appears to be due to the store not having customer groups configured or discount rules that match the expected API response format.
+
+**TODO - Customer Groups**: 
+- Investigate if customer groups need to be created in the BigCommerce admin
+- Check if discount rules need to be configured before testing
+- All customer group tests are marked as `[Explicit]` until resolved
+- Tests expect specific group/product IDs that may not exist in this store
+
 ## Code Quality Settings
 
 The project uses comprehensive code quality settings:
