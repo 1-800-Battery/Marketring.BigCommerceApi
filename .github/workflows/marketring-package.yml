@@ -113,7 +113,7 @@ jobs:
           -p:PackageId=${{ steps.version.outputs.package-name }} \
           -p:Title="Marketring.BigCommerce" \
           -p:Description="BigCommerce API client with Cart API - Internal Marketring Build" \
-          -p:PackageTags="dotnet,bigcommerce,cart,marketring" \
+          -p:PackageTags="dotnet;bigcommerce;cart;marketring" \
           -p:Authors="Marketring" \
           -p:PackageProjectUrl="https://github.com/1-800-Battery/Marketring.BigCommerceApi" \
           -p:RepositoryUrl="https://github.com/1-800-Battery/Marketring.BigCommerceApi" \
