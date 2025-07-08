@@ -116,7 +116,11 @@ jobs:
           --configuration Release \
           --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }} \
           --no-build \
+          -p:MinVerTagPrefix=marketring-v \
+          -p:Version=${{ steps.version.outputs.version }} \
           -p:PackageVersion=${{ steps.version.outputs.version }} \
+          -p:AssemblyVersion=${{ steps.version.outputs.version }} \
+          -p:FileVersion=${{ steps.version.outputs.version }} \
           -p:PackageId=${{ steps.version.outputs.package-name }} \
           -p:Title="Marketring.BigCommerce" \
           -p:Description="BigCommerce API client with Cart API - Internal Marketring Build" \
