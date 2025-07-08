@@ -8,6 +8,13 @@ This is Fusionary.BigCommerceApi - a .NET 8.0 library that provides a fluent, st
 
 **Current Branch Status**: `sync-upstream-main` - This branch contains all upstream improvements and is ready for Cart API integration from the fork.
 
+## Important Git Commit Rules
+
+**NEVER include Claude as a co-author in git commits**. This means:
+- Do NOT add "Co-Authored-By: Claude <noreply@anthropic.com>" to any commit messages
+- Do NOT add any Claude-related authorship or attribution in commits
+- Commits should only reflect the actual human contributors
+
 ## Development Commands
 
 ### Build
