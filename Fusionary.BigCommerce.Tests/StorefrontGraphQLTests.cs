@@ -5,6 +5,7 @@ namespace Fusionary.BigCommerce.Tests;
 public class StorefrontGraphQLTests : BcTestBase
 {
     [Test]
+    [Explicit("Requires StorefrontUrl and short-lived JWT token which cannot be automated in CI")]
     public async Task Can_Query_GraphQL_Async()
     {
         var graphQL = Services.GetRequiredService<IBcStorefrontGraphQL>();

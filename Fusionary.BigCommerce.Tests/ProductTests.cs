@@ -102,10 +102,24 @@ public class ProductTests : BcTestBase
 
         var cancellationToken = CancellationToken.None;
 
+        // First, get any available product ID from the store
+        var searchResponse = await bcProductApi
+            .Search()
+            .Limit(1)
+            .SendAsync(cancellationToken);
+
+        if (!searchResponse.Success || !searchResponse.HasData || searchResponse.Data.Count == 0)
+        {
+            Assert.Inconclusive("No products available in the store to test with");
+            return;
+        }
+
+        var productId = searchResponse.Data[0].Id;
+
         var response = await bcProductApi
             .Get()
             .Include(BcProductInclude.Variants, BcProductInclude.Images, BcProductInclude.CustomFields)
-            .SendAsync(81, cancellationToken);
+            .SendAsync(productId, cancellationToken);
 
         var product = response.Data;
 
