@@ -27,6 +27,8 @@ dotnet build
 dotnet test
 ```
 
+**Important**: Tests are configured to exclude `[Explicit]` tests by default in CI workflows using `-- NUnit.ExplicitIncludes=false`
+
 ### Run a Single Test
 ```bash
 dotnet test --filter "TestMethodName"
@@ -35,6 +37,11 @@ dotnet test --filter "TestMethodName"
 ### Run Tests for a Specific Class
 ```bash
 dotnet test --filter "ClassName"
+```
+
+### Run Tests Including Explicit Tests
+```bash
+dotnet test -- NUnit.ExplicitIncludes=true
 ```
 
 ### Package Generation
@@ -119,6 +126,17 @@ dotnet user-secrets set "BigCommerce:AccessToken" "your-access-token"
 ```
 
 Tests use NUnit framework with FluentAssertions for readable assertions and Bogus for test data generation.
+
+### Known Test Issues
+
+**Product Test Hanging**: The `Can_Get_All_Products_Async` test can cause test runs to hang when the BigCommerce store has a large product catalog (e.g., 1.3M+ products). This test attempts to fetch ALL products page by page, which can take hours or timeout.
+
+**Solution**: 
+- The test has been split into two:
+  - `Can_Get_First_25_Products_Async` - Default test that only fetches the first page (25 products)
+  - `Can_Get_All_Products_Async` - Marked with `[Explicit]` attribute for manual runs only
+- CI workflows use `-- NUnit.ExplicitIncludes=false` to skip explicit tests
+- This prevents timeout issues in both local development and CI environments
 
 ## Code Quality Settings
 
