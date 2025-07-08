@@ -1,5 +1,6 @@
 <Project>
 
+
   <PropertyGroup Label="Nuget">
     <Authors>Fusionary</Authors>
     <PackageProjectUrl>https://github.com/fusionary/Fusionary.BigCommerceApi</PackageProjectUrl>

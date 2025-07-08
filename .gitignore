@@ -3,6 +3,14 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Internal build scripts and configs (exclude from upstream PRs)
+build-internal.sh
+build-internal.ps1
+build-marketring.sh
+NuGet.Marketring.Config
+PACKAGE_MANAGEMENT.md
+.github/workflows/marketring-package.yml
+
 # User-specific files
 *.rsuser
 *.suo
