@@ -133,8 +133,12 @@ jobs:
         
     - name: Pack NuGet package
       run: |
-        cd Fusionary.BigCommerce
-        dotnet pack Fusionary.BigCommerce.csproj \
+        # Move the downloaded artifacts to the correct location
+        mv obj Fusionary.BigCommerce/
+        mv bin Fusionary.BigCommerce/
+        
+        # Now pack from the project directory
+        dotnet pack Fusionary.BigCommerce/Fusionary.BigCommerce.csproj \
           --configuration Release \
           --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }} \
           --no-build \
