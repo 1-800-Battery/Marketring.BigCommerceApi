@@ -61,6 +61,15 @@ jobs:
         name: test-results
         path: TestResults-${{ github.run_number }}/*.trx
         retention-days: 7
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          Fusionary.BigCommerce/bin/Release/
+          Fusionary.BigCommerce/obj/Release/
+        retention-days: 1
       
   package:
     name: Create NuGet Package
@@ -83,6 +92,12 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifacts
+        path: .
         
     - name: Determine version
       id: version
