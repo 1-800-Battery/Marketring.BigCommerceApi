@@ -97,18 +97,8 @@ jobs:
         name: build-artifacts
         path: ${{ github.workspace }}
         
-    - name: Debug path structure
-      run: |
-        echo "=== Current working directory ==="
-        pwd
-        echo "=== Workspace directory ==="
-        echo "${{ github.workspace }}"
-        echo "=== Looking for project.assets.json ==="
-        find . -name "project.assets.json" -type f 2>/dev/null || echo "No project.assets.json found"
-        echo "=== Fusionary.BigCommerce directory ==="
-        ls -la Fusionary.BigCommerce/ 2>/dev/null || echo "Directory not found"
-        echo "=== Fusionary.BigCommerce/obj directory ==="
-        ls -la Fusionary.BigCommerce/obj/ 2>/dev/null || echo "obj directory not found"
+    - name: Restore dependencies  
+      run: dotnet restore Fusionary.BigCommerce/Fusionary.BigCommerce.csproj
         
     - name: Determine version
       id: version
