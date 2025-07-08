@@ -2,6 +2,49 @@ namespace Fusionary.BigCommerce.Tests;
 
 public class OrderTests : BcTestBase
 {
+    private readonly List<int> _createdOrderIds = new();
+    private IBcApi _bcApi = null!;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _bcApi = Services.GetRequiredService<IBcApi>();
+    }
+
+    [TearDown]
+    public async Task TearDownAsync()
+    {
+        // Clean up any orders created during tests
+        foreach (var orderId in _createdOrderIds)
+        {
+            try
+            {
+                await _bcApi.Orders().Order().Update().SendAsync(orderId, new BcOrderPut 
+                { 
+                    StatusId = BcOrderStatus.Cancelled 
+                }, CancellationToken.None);
+                Console.WriteLine($"Cancelled test order {orderId}");
+            }
+            catch (Exception ex)
+            {
+                // Log but don't fail the test cleanup
+                Console.WriteLine($"Failed to cancel order {orderId}: {ex.Message}");
+            }
+        }
+        _createdOrderIds.Clear();
+        
+        // Call the base TearDown method
+        base.TearDown();
+    }
+
+    /// <summary>
+    /// Helper method to track created orders for automatic cleanup
+    /// </summary>
+    private void TrackOrderForCleanup(int orderId)
+    {
+        _createdOrderIds.Add(orderId);
+        Console.WriteLine($"Tracking order {orderId} for cleanup");
+    }
     [Test]
     public async Task Can_Create_Order_Metafields_Async()
     {
@@ -82,13 +125,22 @@ public class OrderTests : BcTestBase
             },
             Products = new List<BcOrderCatalogProductPost>
             {
-                new() { Quantity = Faker.Random.Int(0, 10), ProductId = 114 }
-            }
+                new() { Quantity = Faker.Random.Int(1, 3), ProductId = 114 } // Changed from 0-10 to 1-3 to avoid zero quantities
+            },
+            StaffNotes = $"AUTOMATED TEST ORDER - Created by test suite at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC - DO NOT SHIP",
+            ExternalSource = "NUnit Test Suite",
+            ExternalOrderId = $"TEST-{Guid.NewGuid().ToString("N")[..8]}"
         };
 
         var result = await createOrdersApi.SendAsync(newOrder, cancellationToken);
 
         result.Success.Should().BeTrue();
+
+        // Track the created order for cleanup
+        if (result.Success && result.Data?.Id != null)
+        {
+            TrackOrderForCleanup(result.Data.Id);
+        }
     }
 
     [Test]

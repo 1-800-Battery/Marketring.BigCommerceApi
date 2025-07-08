@@ -47,6 +47,65 @@ dotnet test -- NUnit.ExplicitIncludes=true
 ### Package Generation
 NuGet packages are automatically generated on build due to `<GeneratePackageOnBuild>true</GeneratePackageOnBuild>` in the project file.
 
+## Test Safety Practices
+
+### Order Test Cleanup
+**IMPORTANT**: Order tests create real orders in the BigCommerce store that could be accidentally fulfilled. All order creation tests MUST implement cleanup and identification:
+
+```csharp
+public class OrderTests : BcTestBase
+{
+    private readonly List<int> _createdOrderIds = new();
+    private IBcApi _bcApi = null!;
+
+    [SetUp]
+    public void SetUp() => _bcApi = Services.GetRequiredService<IBcApi>();
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        // Clean up any orders created during tests
+        foreach (var orderId in _createdOrderIds)
+        {
+            try
+            {
+                await _bcApi.Orders().Order().Update().SendAsync(orderId, 
+                    new BcOrderPut { StatusId = BcOrderStatus.Cancelled }, 
+                    CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to cancel order {orderId}: {ex.Message}");
+            }
+        }
+        _createdOrderIds.Clear();
+    }
+
+    private void TrackOrderForCleanup(int orderId)
+    {
+        _createdOrderIds.Add(orderId);
+        Console.WriteLine($"📝 Tracking order {orderId} for cleanup");
+    }
+}
+```
+
+**Test Order Identification**:
+All test orders MUST be clearly identified to prevent accidental fulfillment:
+```csharp
+var testOrder = new BcOrderPost
+{
+    StaffNotes = $"AUTOMATED TEST ORDER - Created by test suite at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC - DO NOT SHIP",
+    ExternalSource = "NUnit Test Suite",
+    ExternalOrderId = $"TEST-{Guid.NewGuid().ToString("N")[..8]}",
+    // ... other order properties
+};
+```
+
+**Safe Order Status Options for Cleanup**:
+- `BcOrderStatus.Cancelled = 5` (Recommended for test cleanup)
+- `BcOrderStatus.Completed = 10` (For testing completion workflows)
+- `BcOrderStatus.Declined = 6` (For testing decline workflows)
+
 ## Core Architecture
 
 ### Main API Structure
