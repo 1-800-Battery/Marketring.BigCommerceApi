@@ -133,7 +133,8 @@ jobs:
         
     - name: Pack NuGet package
       run: |
-        dotnet pack Fusionary.BigCommerce/Fusionary.BigCommerce.csproj \
+        cd Fusionary.BigCommerce
+        dotnet pack Fusionary.BigCommerce.csproj \
           --configuration Release \
           --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }} \
           --no-build \
