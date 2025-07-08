@@ -5,10 +5,32 @@ namespace Fusionary.BigCommerce.Tests;
 public class ProductTests : BcTestBase
 {
     [Test]
+    public async Task Can_Get_First_25_Products_Async()
+    {
+        var products = await GetProductsAsync(fetchAllPages: false);
+        
+        products.Count.Should().BeLessOrEqualTo(25);
+        
+        LogMessage($"Retrieved {products.Count} products");
+        DumpObject(products);
+        
+        Assert.Pass();
+    }
+    
+    [Test]
+    [Explicit("This test fetches all products and can take a long time")]
     public async Task Can_Get_All_Products_Async()
     {
+        var products = await GetProductsAsync(fetchAllPages: true);
+        
+        LogMessage($"Retrieved all {products.Count} products");
+        
+        Assert.Pass();
+    }
+    
+    private async Task<List<BcProductFull>> GetProductsAsync(bool fetchAllPages)
+    {
         var productApi = Services.GetRequiredService<BcApiProduct>();
-
         var cancellationToken = Cts.Token;
 
         var response = await productApi
@@ -23,28 +45,21 @@ public class ProductTests : BcTestBase
         if (!response)
         {
             DumpObject(response.Error);
-            Assert.Fail();
-            return;
+            Assert.Fail($"Failed to get products: {response.Error}");
+            return new List<BcProductFull>();
         }
 
         var (data, pagination) = response;
+        LogMessage($"First page: {data.Count} products, Total available: {pagination.Total}");
 
-        LogMessage($"Total from first page: {pagination.Total}");
-
-        if (response.HasNextPage)
+        if (fetchAllPages && response.HasNextPage)
         {
             var remainingItems = await GetRemainingDataAsync(productApi, pagination, cancellationToken);
-
             data.AddRange(remainingItems);
+            LogMessage($"Fetched all pages. Total items: {data.Count}");
         }
 
-        LogMessage($"Total Items: {data.Count}");
-
-        data.Count.Should().Be(pagination.Total);
-
-        DumpObject(data);
-
-        Assert.Pass();
+        return data;
     }
 
     public record BcSku

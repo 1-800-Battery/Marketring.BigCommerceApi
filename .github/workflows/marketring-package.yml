@@ -52,7 +52,7 @@ jobs:
         BigCommerce__StoreHash: ${{ secrets.BIGCOMMERCE_STORE_HASH }}
         BigCommerce__AccessToken: ${{ secrets.BIGCOMMERCE_ACCESS_TOKEN }}
         BigCommerce__Host: ${{ secrets.BIGCOMMERCE_HOST }}
-      run: dotnet test --configuration Release --no-build --verbosity normal --logger trx --results-directory "TestResults-${{ github.run_number }}"
+      run: dotnet test --configuration Release --no-build --verbosity normal --logger trx --results-directory "TestResults-${{ github.run_number }}" -- NUnit.ExplicitIncludes=false
       
     - name: Upload test results
       uses: actions/upload-artifact@v4
