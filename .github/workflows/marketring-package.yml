@@ -99,6 +99,19 @@ jobs:
         name: build-artifacts
         path: .
         
+    - name: Debug - List downloaded artifacts
+      run: |
+        echo "=== Current directory ==="
+        pwd
+        echo "=== Directory contents ==="
+        ls -la
+        echo "=== Fusionary.BigCommerce directory ==="
+        ls -la Fusionary.BigCommerce/ || echo "Fusionary.BigCommerce directory not found"
+        echo "=== obj directory ==="
+        ls -la Fusionary.BigCommerce/obj/ || echo "Fusionary.BigCommerce/obj directory not found"
+        echo "=== Looking for project.assets.json ==="
+        find . -name "project.assets.json" -type f || echo "No project.assets.json found in any directory"
+        
     - name: Determine version
       id: version
       run: |
