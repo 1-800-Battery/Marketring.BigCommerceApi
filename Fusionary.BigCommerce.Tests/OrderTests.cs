@@ -163,54 +163,169 @@ public class OrderTests : BcTestBase
         Assert.That(result.Success, Is.True);
     }
 
+    #region Cart Test Helpers
+    
+    private async Task<string> CreateTestCartAsync(IBcApi bc, CancellationToken cancellationToken, params (int productId, int quantity)[] products)
+    {
+        var lineItems = products.Length > 0 
+            ? products.Select(p => new BcCartLineItem { ProductId = p.productId, Quantity = p.quantity }).ToList()
+            : new List<BcCartLineItem> { new() { ProductId = 23376, Quantity = 1 } }; // Default product
+
+        var cartCreate = new BcCartPost
+        {
+            ChannelId = 1,
+            LineItems = lineItems
+        };
+
+        var cartResult = await bc.Carts().Cart().Create().SendAsync(cartCreate, cancellationToken);
+        Assert.That(cartResult.Success, Is.True, $"Failed to create cart: {cartResult.Error}");
+        Assert.That(cartResult.HasData, Is.True);
+        
+        TestContext.WriteLine($"Created test cart with ID: {cartResult.Data.Id}");
+        return cartResult.Data.Id!;
+    }
+
+    private static async Task CleanupTestCartAsync(IBcApi bc, string? cartId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(cartId)) return;
+
+        try
+        {
+            var deleteResult = await bc.Carts().Cart().Delete().SendAsync(cartId, cancellationToken);
+            if (deleteResult.Success)
+            {
+                TestContext.WriteLine($"Cleaned up cart: {cartId}");
+            }
+            else
+            {
+                TestContext.WriteLine($"Failed to delete cart {cartId}: {deleteResult.Error}");
+            }
+        }
+        catch (Exception ex)
+        {
+            TestContext.WriteLine($"Cleanup error for cart {cartId}: {ex.Message}");
+        }
+    }
+
+    private async Task<T> WithTestCartAsync<T>(IBcApi bc, Func<string, Task<T>> testAction, CancellationToken cancellationToken, params (int productId, int quantity)[] products)
+    {
+        string? cartId = null;
+        try
+        {
+            cartId = await CreateTestCartAsync(bc, cancellationToken, products);
+            return await testAction(cartId);
+        }
+        finally
+        {
+            await CleanupTestCartAsync(bc, cartId, cancellationToken);
+        }
+    }
+    
+    #endregion
+
     [Test]
     public async Task Can_Get_Cart_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
-
         var cancellationToken = CancellationToken.None;
 
-        var result = await bc
-            .Carts()
-            .Cart().Get().SendAsync("472abc00-7343-4e5a-9c31-d4f0276093d9", cancellationToken);
+        await WithTestCartAsync(bc, async cartId =>
+        {
+            // Test getting the cart
+            var result = await bc.Carts().Cart().Get().SendAsync(cartId, cancellationToken);
 
-        DumpObject(result);
+            DumpObject(result);
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Success, Is.True);
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.HasData, Is.True);
+            Assert.That(result.Data.Id, Is.EqualTo(cartId));
+            
+            return result;
+        }, cancellationToken);
     }
 
     [Test]
     public async Task Can_Get_CartRedirects_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
-
         var cancellationToken = CancellationToken.None;
-        var empty = new BcCartRedirectQueryParms();
-        var result = await bc
-            .Carts()
-            .Cart().GetCartRedirects().SendAsync("fe057e11-8e99-4e6b-9b0c-347474af8b20", empty, cancellationToken);
 
-        DumpObject(result);
+        await WithTestCartAsync(bc, async cartId =>
+        {
+            // Test getting cart redirects
+            var queryParams = new BcCartRedirectQueryParms
+            {
+                QueryParameters = new BcCartRedirectQueryParms.QueryParams
+                {
+                    Key1 = "test_param_1",
+                    Key2 = "test_param_2"
+                }
+            };
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Success, Is.True);
+            var result = await bc
+                .Carts()
+                .Cart().GetCartRedirects().SendAsync(cartId, queryParams, cancellationToken);
+
+            DumpObject(result);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Success, Is.True);
+            
+            if (result.HasData)
+            {
+                Assert.That(result.Data.CartUrl, Is.Not.Null.Or.Empty, "Cart URL should be populated");
+                Assert.That(result.Data.CheckoutUrl, Is.Not.Null.Or.Empty, "Checkout URL should be populated");
+                Assert.That(result.Data.EmbeddedCheckoutUrl, Is.Not.Null.Or.Empty, "Embedded checkout URL should be populated");
+                
+                TestContext.WriteLine($"Cart URL: {result.Data.CartUrl}");
+                TestContext.WriteLine($"Checkout URL: {result.Data.CheckoutUrl}");
+                TestContext.WriteLine($"Embedded Checkout URL: {result.Data.EmbeddedCheckoutUrl}");
+            }
+            
+            return result;
+        }, cancellationToken);
     }
 
     [Test]
     public async Task Can_Delete_Cart_Line_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
-
         var cancellationToken = CancellationToken.None;
 
-        var result = await bc
-            .Carts()
-            .Cart().DeleteLineItem().SendAsync("472abc00-7343-4e5a-9c31-d4f0276093d9", "794e2dce-ac8c-4e71-b586-978afe423381", cancellationToken);
+        // Create cart with two products
+        var products = new[]
+        {
+            (productId: 23376, quantity: 1), // 75PVP
+            (productId: 23379, quantity: 2)  // 85PVP
+        };
 
-        DumpObject(result);
-         
-        Assert.Pass();
+        await WithTestCartAsync(bc, async cartId =>
+        {
+            // Verify cart has 2 items
+            var getResult = await bc.Carts().Cart().Get().SendAsync(cartId, cancellationToken);
+            Assert.That(getResult.Data.LineItems?.PhysicalItems?.Count, Is.EqualTo(2));
+            
+            // Get the first line item ID to delete
+            var lineItemToDelete = getResult.Data.LineItems!.PhysicalItems![0].Id;
+
+            // Delete the line item
+            var result = await bc
+                .Carts()
+                .Cart().DeleteLineItem().SendAsync(cartId, lineItemToDelete!, cancellationToken);
+
+            DumpObject(result);
+            
+            Assert.That(result.Success, Is.True);
+            
+            // Verify cart now has 1 item
+            var verifyResult = await bc.Carts().Cart().Get().SendAsync(cartId, cancellationToken);
+            Assert.That(verifyResult.Data.LineItems?.PhysicalItems?.Count, Is.EqualTo(1));
+            
+            TestContext.WriteLine($"Successfully deleted line item from cart");
+            
+            return result;
+        }, cancellationToken, products);
     }
 
     [Test]

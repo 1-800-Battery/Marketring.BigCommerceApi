@@ -5,7 +5,7 @@ This document tracks the progress of cherry-picking commits from the archived re
 
 ## Cherry-Pick Status Summary
 
-### ✅ FULLY IMPLEMENTED (5 commits)
+### ✅ FULLY IMPLEMENTED (7 commits)
 
 #### 1. `8319419` - Put Shared Back In
 - **Status**: ✅ FULLY IMPLEMENTED
@@ -46,9 +46,28 @@ This document tracks the progress of cherry-picking commits from the archived re
 - **Impact**: All Cart operations now include comprehensive data by default
 - **Tests**: ✅ All tests passing
 
+#### 6. `28a03d7` - Update Options Return on Update Line
+- **Status**: ✅ FULLY IMPLEMENTED
+- **Changes**: Added Cart redirect functionality
+- **New Types Added**:
+  - `BcCartRedirectURLs` - Contains cart_url, checkout_url, embedded_checkout_url
+  - `BcCartRedirectQueryParms` - Query parameters for redirect generation
+  - `BcApiCartGetCheckoutURLs` - Operation class for getting cart redirect URLs
+- **Adaptations**:
+  - Converted to primary constructor pattern
+  - Fixed parameter naming (parameterss → parameters)
+  - Cleaned up formatting and unnecessary usings
+  - Updated Cart update line with default includes in SendAsync
+- **Impact**: Resolves missing Cart redirect functionality compilation errors
+- **Tests**: ✅ Test refactored to create cart dynamically and clean up properly
+- **Test Improvements**: 
+  - All cart tests now create their own carts for isolation
+  - Added reusable helper methods to reduce code duplication
+  - Proper cleanup ensures no test carts are left behind
+
 ### 🔄 PARTIALLY IMPLEMENTED (1 commit)
 
-#### 6. `8952dec` - Fix product Modifiers
+#### 7. `8952dec` - Fix product Modifiers
 - **Status**: ✅ FULLY IMPLEMENTED (ANALYSIS-BASED)
 - **Analysis**: Created comprehensive analysis document `ARCHIVED_REPO_IMPROVEMENTS.md`
 - **Completed**:
@@ -106,15 +125,15 @@ Users migrating from the archived repository now have:
 ✅ **ALL CRITICAL COMPATIBILITY WORK COMPLETE**
 
 ### Summary of Achievements:
-1. **6 commits successfully analyzed and implemented** (5 cherry-picked + 1 analysis-based)
-2. **All compilation errors resolved** for users migrating from archived repository
-3. **Enhanced Cart operations** with comprehensive default includes
+1. **7 commits successfully analyzed and implemented** (6 cherry-picked + 1 analysis-based)
+2. **All compilation errors resolved** including missing Cart redirect functionality
+3. **Enhanced Cart operations** with comprehensive default includes and redirect support
 4. **Improved JSON serialization** with custom converters for API inconsistencies
 5. **Better type safety** with enhanced enum handling and proper typing
 6. **Zero breaking changes** - all adaptations maintain current architecture
 
 ### Migration Path Validated:
-Users can now migrate from `richardkeller411/Fusionary.BigCommerceApi` to `Marketring.BigCommerceApi` without compatibility issues. All essential functionality from the archived repository has been preserved and enhanced.
+Users can now migrate from `richardkeller411/Fusionary.BigCommerceApi` to `Marketring.BigCommerceApi` without compatibility issues. All essential functionality from the archived repository has been preserved and enhanced, including the Cart redirect functionality that was on the test branch.
 
 ## Optional Future Enhancements
 
@@ -129,4 +148,5 @@ Users can now migrate from `richardkeller411/Fusionary.BigCommerceApi` to `Marke
 *Project Status: ✅ COMPLETE*
 *Last Updated: 2025-07-08*
 *Build Status: ✅ All tests passing*
+*Test Status: ✅ 30/30 tests passing (including all 3 refactored cart tests)*
 *Compatibility Status: ✅ Full compatibility achieved*
