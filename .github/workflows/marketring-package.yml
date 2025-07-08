@@ -97,6 +97,21 @@ jobs:
         name: build-artifacts
         path: .
         
+    - name: Debug downloaded structure
+      run: |
+        echo "=== Downloaded files ==="
+        find . -name "project.assets.json" -type f
+        echo "=== Directory structure ==="
+        ls -la
+        if [ -d "Fusionary.BigCommerce" ]; then
+          echo "=== Fusionary.BigCommerce contents ==="
+          ls -la Fusionary.BigCommerce/
+          if [ -d "Fusionary.BigCommerce/obj" ]; then
+            echo "=== obj directory ==="
+            ls -la Fusionary.BigCommerce/obj/
+          fi
+        fi
+        
     - name: Determine version
       id: version
       run: |
