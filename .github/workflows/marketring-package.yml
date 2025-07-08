@@ -129,6 +129,13 @@ jobs:
           -p:RepositoryUrl="https://github.com/1-800-Battery/Marketring.BigCommerceApi" \
           -p:PackageIconUrl="https://raw.githubusercontent.com/1-800-Battery/Marketring.BigCommerceApi/main/icon.png"
           
+    - name: Debug package files
+      run: |
+        echo "=== Package directory contents ==="
+        ls -la ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/
+        echo "=== Expected version: ${{ steps.version.outputs.version }} ==="
+        echo "=== Expected file: ${{ steps.version.outputs.package-file }} ==="
+          
     - name: Verify package created
       run: |
         ls -la ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/
