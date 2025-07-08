@@ -68,7 +68,7 @@ jobs:
         name: build-artifacts
         path: |
           Fusionary.BigCommerce/bin/Release/
-          Fusionary.BigCommerce/obj/Release/
+          Fusionary.BigCommerce/obj/
         retention-days: 1
       
   package:
