@@ -83,44 +83,22 @@ jobs:
       run: |
         git push origin ${{ env.branch_name }}
         
-    - name: Create Pull Request
+    - name: Output sync instructions
       if: steps.check.outputs.has_changes == 'true' && steps.merge.outputs.merge_conflict == 'false'
-      uses: actions/github-script@v7
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const prBody = `## Automated Upstream Sync
-          
-          This PR syncs our fork with the latest changes from [fusionary/Fusionary.BigCommerceApi](https://github.com/fusionary/Fusionary.BigCommerceApi).
-          
-          ### Changes
-          - Upstream commit: ${{ steps.check.outputs.upstream_commit }}
-          - Auto-merged: ✅
-          
-          ### Next Steps
-          1. Review the changes
-          2. Run tests to ensure Cart API compatibility
-          3. Merge when ready
-          
-          ---
-          *This PR was created automatically by the sync workflow.*`;
-          
-          const pr = await github.rest.pulls.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: '🔄 Sync with upstream Fusionary',
-            head: '${{ env.branch_name }}',
-            base: 'main',
-            body: prBody
-          });
-          
-          // Add labels to the PR
-          await github.rest.issues.addLabels({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: pr.data.number,
-            labels: ['upstream-sync', 'automated']
-          });
+      run: |
+        echo "### 🔄 Sync branch created successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** \`${{ env.branch_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Upstream commit:** ${{ steps.check.outputs.upstream_commit }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+        echo "1. **Create Pull Request:** [Click here to create PR](https://github.com/${{ github.repository }}/compare/main...${{ env.branch_name }})" >> $GITHUB_STEP_SUMMARY
+        echo "2. **Review changes** from upstream" >> $GITHUB_STEP_SUMMARY  
+        echo "3. **Run tests** to ensure Cart API compatibility" >> $GITHUB_STEP_SUMMARY
+        echo "4. **Merge when ready**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "*Sync completed automatically by workflow*" >> $GITHUB_STEP_SUMMARY
         
     - name: Create conflict issue
       if: steps.check.outputs.has_changes == 'true' && steps.merge.outputs.merge_conflict == 'true'
@@ -163,10 +141,11 @@ jobs:
       run: |
         if [ "${{ steps.check.outputs.has_changes }}" = "false" ]; then
           echo "### ✅ Already up to date with upstream" >> $GITHUB_STEP_SUMMARY
+          echo "No changes found between local and upstream repositories." >> $GITHUB_STEP_SUMMARY
         elif [ "${{ steps.merge.outputs.merge_conflict }}" = "true" ]; then
           echo "### ⚠️ Merge conflicts detected" >> $GITHUB_STEP_SUMMARY
-          echo "Manual intervention required. An issue has been created." >> $GITHUB_STEP_SUMMARY
+          echo "Manual intervention required. An issue has been created with instructions." >> $GITHUB_STEP_SUMMARY
         else
-          echo "### 🔄 Sync PR created" >> $GITHUB_STEP_SUMMARY
-          echo "Review and merge the PR to complete the sync." >> $GITHUB_STEP_SUMMARY
+          echo "### 🎉 Sync completed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "Sync branch has been pushed. Use the link above to create a pull request." >> $GITHUB_STEP_SUMMARY
         fi
