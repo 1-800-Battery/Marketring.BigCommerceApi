@@ -85,13 +85,11 @@ jobs:
         
     - name: Create Pull Request
       if: steps.check.outputs.has_changes == 'true' && steps.merge.outputs.merge_conflict == 'false'
-      uses: peter-evans/create-pull-request@v5
+      uses: actions/github-script@v7
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ env.branch_name }}
-        title: '🔄 Sync with upstream Fusionary'
-        body: |
-          ## Automated Upstream Sync
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prBody = `## Automated Upstream Sync
           
           This PR syncs our fork with the latest changes from [fusionary/Fusionary.BigCommerceApi](https://github.com/fusionary/Fusionary.BigCommerceApi).
           
@@ -105,10 +103,24 @@ jobs:
           3. Merge when ready
           
           ---
-          *This PR was created automatically by the sync workflow.*
-        labels: |
-          upstream-sync
-          automated
+          *This PR was created automatically by the sync workflow.*`;
+          
+          const pr = await github.rest.pulls.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🔄 Sync with upstream Fusionary',
+            head: '${{ env.branch_name }}',
+            base: 'main',
+            body: prBody
+          });
+          
+          // Add labels to the PR
+          await github.rest.issues.addLabels({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: pr.data.number,
+            labels: ['upstream-sync', 'automated']
+          });
         
     - name: Create conflict issue
       if: steps.check.outputs.has_changes == 'true' && steps.merge.outputs.merge_conflict == 'true'
