@@ -3,7 +3,7 @@ namespace Fusionary.BigCommerce.Types;
 public class BcCustomer
 {
     [JsonPropertyName("id")]
-    public int Id { get; set; }
+    public int? Id { get; set; }
 
     [JsonPropertyName("email")]
     public string? Email { get; set; }
@@ -33,10 +33,10 @@ public class BcCustomer
     public int? CustomerGroupId { get; set; }
 
     [JsonPropertyName("date_created")]
-    public BcDateTime DateCreated { get; set; }
+    public BcDateTime? DateCreated { get; set; }
 
     [JsonPropertyName("date_modified")]
-    public BcDateTime DateModified { get; set; }
+    public BcDateTime? DateModified { get; set; }
 
     [JsonPropertyName("address_count")]
     public int? AddressCount { get; set; }
@@ -55,6 +55,9 @@ public class BcCustomer
 
     [JsonPropertyName("accepts_product_review_abandoned_cart_emails")]
     public bool? AcceptsProductReviewAbandonedCartEmails { get; set; }
+    
+    [JsonPropertyName("addresses")]
+    public List<BcCustomerAddress>? Addresses { get; set; }
 
     [JsonPropertyName("origin_channel_id")]
     public int? OriginChannelId { get; set; }

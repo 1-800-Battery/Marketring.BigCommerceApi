@@ -19,7 +19,7 @@ public record BcProductOptionValue : BcExtensionData
     /// <remarks>
     /// Required in a /POST.
     /// </remarks>
-    public required string Label { get; set; }
+    public string Label { get; set; } = null!;
 
     /// <summary>
     /// The order in which the value will be displayed on the product page.
@@ -27,7 +27,7 @@ public record BcProductOptionValue : BcExtensionData
     /// <remarks>
     /// Required in a /POST.
     /// </remarks>
-    public required int SortOrder { get; set; }
+    public int SortOrder { get; set; }
 
     /// <summary>
     /// The unique numerical ID of the option.

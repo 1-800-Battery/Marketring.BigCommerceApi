@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
@@ -27,17 +27,13 @@
     <Folder Include="B2B\Operations\Authentication\" />
     <Folder Include="B2B\Operations\Channel\" />
     <Folder Include="B2B\Operations\Company\Account Hierarchies\" />
-    <Folder Include="B2B\Operations\Company\Companies\" />
     <Folder Include="B2B\Operations\Company\Company Roles and Permissions\" />
     <Folder Include="B2B\Operations\Invoice Management\Payments\" />
     <Folder Include="B2B\Operations\Invoice Management\Receipt\" />
-    <Folder Include="B2B\Operations\Order\" />
-    <Folder Include="B2B\Operations\Payment\" />
     <Folder Include="B2B\Operations\Quote\" />
     <Folder Include="B2B\Operations\Sales Staff\" />
     <Folder Include="B2B\Operations\Shopping List\" />
     <Folder Include="B2B\Operations\Super Admin\" />
-    <Folder Include="B2B\Operations\User\" />
     <Folder Include="Operations\Catalog\Product Modifiers\Images\" />
     <Folder Include="Operations\Catalog\Product Modifiers\Values\" />
     <Folder Include="Operations\Catalog\Product Reviews" />

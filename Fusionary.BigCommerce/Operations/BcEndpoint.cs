@@ -46,6 +46,10 @@ public static class BcEndpoint
 
     public static string CustomersGroupsV2(BcId groupId) => $"v2/customer_groups/{groupId}";
 
+    public static string CustomerAttributesV3() => "v3/customers/attributes";
+    
+    public static string CustomerAttributeValuesV3() => "v3/customers/attribute-values";
+    
     public static string CustomersV3() => "v3/customers";
 
     public static string CustomersV3(BcId customerId) => $"v3/catalog/customers/{customerId}";
@@ -73,6 +77,8 @@ public static class BcEndpoint
     public static string OrdersV2(BcId orderId) => $"v2/orders/{orderId}";
 
     public static string OrdersV2() => "v2/orders";
+    
+    public static string OrderTransactionsV3(BcId orderId) => $"v3/orders/{orderId}/transactions";
 
     public static string PriceListAssignmentsV3() => "v3/pricelists/assignments";
 
@@ -92,6 +98,9 @@ public static class BcEndpoint
     public static string ProductBulkPricingRulesV3(BcId productId) =>
         $"v3/catalog/products/{productId}/bulk-pricing-rules";
 
+    public static string ProductBulkPricingRulesV3(BcId productId, BcId bulkPricingRuleId) =>
+        $"v3/catalog/products/{productId}/bulk-pricing-rules/{bulkPricingRuleId}";
+    
     public static string ProductCategoryAssignmentsV3() => "v3/catalog/products/category-assignments";
 
     public static string ProductChannelAssignmentsV3() => "v3/catalog/products/channel-assignments";
@@ -99,6 +108,7 @@ public static class BcEndpoint
     public static string ProductComplexRulesV3(BcId productId) => $"v3/catalog/products/{productId}/complex-rules";
 
     public static string ProductCustomFieldsV3(BcId productId) => $"v3/catalog/products/{productId}/custom-fields";
+    
 
     public static string ProductCustomFieldsV3(BcId productId, BcId customFieldId) =>
         $"v3/catalog/products/{productId}/custom-fields/{customFieldId}";
@@ -153,10 +163,15 @@ public static class BcEndpoint
     public static string ProductVariantMetafieldsV3(BcId productId, BcId variantId, BcId metafieldId) =>
         $"v3/catalog/products/{productId}/variants/{variantId}/metafields/{metafieldId}";
 
+    public static string ProductVariantsV3() => "v3/catalog/variants";
+
     public static string ProductVariantsV3(BcId productId) => $"v3/catalog/products/{productId}/variants";
 
     public static string ProductVariantsV3(BcId productId, BcId variantId) =>
         $"v3/catalog/products/{productId}/variants/{variantId}";
+    
+    public static string ProductVariantsBatch() =>
+        $"v3/catalog/variants";
 
     public static string ProductVideosV3(BcId productId) => $"v3/catalog/products/{productId}/videos";
 
@@ -170,4 +185,10 @@ public static class BcEndpoint
     public static string WebhooksV3() => "v3/hooks";
 
     public static string WebhooksV3(BcId webhookId) => $"v3/hooks/{webhookId}";
+
+    public static string Countries() => $"v2/countries";
+    
+    public static string Countries(string id) => $"v2/countries/{id}";
+
+    public static string States(int countryId) => $"v2/countries/{countryId}/states";
 }

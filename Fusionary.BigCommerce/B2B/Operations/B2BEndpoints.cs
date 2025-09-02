@@ -38,4 +38,12 @@ public static class B2BEndpoints
     public static string OrdersV3(BcId orderId) => $"{OrdersV3()}/{orderId}";
     
     public static string PaymentsV3() => "v3/io/payments";
+
+    public static string Companies() => "v3/io/companies";
+
+    public static string Companies(int id) => $"{Companies()}/{id}";
+
+    public static string CreditStatus(int id) => $"{Companies(id)}/credit";
+    
+    public static string Users() => $"v3/io/users";
 }

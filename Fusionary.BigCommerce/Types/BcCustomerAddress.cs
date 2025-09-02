@@ -3,10 +3,10 @@ namespace Fusionary.BigCommerce.Types;
 public record BcCustomerAddress
 {
     [JsonPropertyName("id")]
-    public int Id { get; set; }
+    public int? Id { get; set; }
 
     [JsonPropertyName("customer_id")]
-    public int CustomerId { get; set; }
+    public int? CustomerId { get; set; }
 
     [JsonPropertyName("first_name")]
     public required string FirstName { get; set; }
@@ -27,13 +27,13 @@ public record BcCustomerAddress
     public required string City { get; set; }
 
     [JsonPropertyName("state_or_province")]
-    public required string StateOrProvince { get; set; }
+    public string? StateOrProvince { get; set; }
 
     [JsonPropertyName("postal_code")]
     public required string PostalCode { get; set; }
 
     [JsonPropertyName("country")]
-    public required string Country { get; set; }
+    public string? Country { get; set; }
 
     [JsonPropertyName("country_code")]
     public required string CountryCode { get; set; }
