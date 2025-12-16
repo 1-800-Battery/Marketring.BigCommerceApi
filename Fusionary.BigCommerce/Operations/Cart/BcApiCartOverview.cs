@@ -1,6 +1,14 @@
 namespace Fusionary.BigCommerce.Operations;
 
-public class BcApiCartsOverview(IBcApi api) : IBcApiOperation
+public class BcApiCartsOverview : IBcApiOperation
 {
-    public BcApiCart Cart() => new(api);
+    private readonly IBcApi _api;
+
+    public BcApiCartsOverview(IBcApi api)
+    {
+        _api = api;
+    }
+
+    public BcApiCart Cart() => new(_api);
+     
 }

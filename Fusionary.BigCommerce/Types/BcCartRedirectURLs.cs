@@ -1,13 +1,27 @@
-namespace Fusionary.BigCommerce.Types;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public record BcCartRedirectURLs
+namespace Fusionary.BigCommerce.Types
 {
-    [JsonPropertyName("cart_url")]
-    public string? CartUrl { get; set; }
+    public record BcCartRedirectURLs
+    {
 
-    [JsonPropertyName("checkout_url")]
-    public string? CheckoutUrl { get; set; }
 
-    [JsonPropertyName("embedded_checkout_url")]
-    public string? EmbeddedCheckoutUrl { get; set; }
+        [JsonPropertyName("cart_url")]
+        public string? CartUrl { get; set; }
+
+        [JsonPropertyName("checkout_url")]
+        public string? CheckoutUrl { get; set; }
+
+        [JsonPropertyName("embedded_checkout_url")]
+        public string? EmbeddedCheckoutUrl { get; set; }
+         
+
+      
+      
+         
+    }
 }

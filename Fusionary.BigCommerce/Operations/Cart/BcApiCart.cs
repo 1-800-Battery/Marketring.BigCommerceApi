@@ -1,12 +1,22 @@
+using Fusionary.BigCommerce.Operations.Cart;
+
 namespace Fusionary.BigCommerce.Operations;
 
-public class BcApiCart(IBcApi api) : IBcApiOperation
+public class BcApiCart : IBcApiOperation
 {
-    public BcApiCartGetCheckoutURLs GetCartRedirects() => new(api);
-    public BcApiCartLineAdd AddLineItem() => new(api);
-    public BcApiCartUpdateLine UpdateLineItem() => new(api);
-    public BcApiCartDeleteItem DeleteLineItem() => new(api);
-    public BcApiCartCreate Create() => new(api);
-    public BcApiCartDelete Delete() => new(api);
-    public BcApiCartGet Get() => new(api);
+    private readonly IBcApi _api;
+
+    public BcApiCart(IBcApi api)
+    {
+        _api = api;
+    }
+
+    public BcApiCartGetCheckoutURLs GetCartRedirects() => new(_api);
+    public BcApiCartLineAdd AddLineItem() => new(_api);
+    public BcApiCartUpdateLine UpdateLineItem() => new(_api);
+    public BcApiCartDeleteItem DeleteLineItem() => new(_api);
+    public BcApiCartCreate Create() => new(_api);
+    public BcApiCartDelete Delete() => new(_api);
+    public BcApiCartGet Get() => new(_api);
+     
 }

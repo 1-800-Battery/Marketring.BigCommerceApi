@@ -1,29 +1,37 @@
-namespace Fusionary.BigCommerce.Operations;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public class BcApiCartUpdateLine(IBcApi api) : BcRequestBuilder(api), IBcApiOperation
+namespace Fusionary.BigCommerce.Operations.Cart
 {
-    public Task<BcResultData<BcCartResponseFull>> SendAsync(
-        string cartId,
-        string lineId,
-        object cartItem,
-        CancellationToken cancellationToken = default
-    ) =>
-        SendAsync<BcCartResponseFull>(cartId, lineId, cartItem, cancellationToken);
 
-    public async Task<BcResultData<T>> SendAsync<T>(string cartId, string lineId, object cartItems, CancellationToken cancellationToken = default)
+    public class BcApiCartUpdateLine : BcRequestBuilder, IBcApiOperation
     {
-        // Add default includes if not already specified
-        if (!Filter.ToQueryString().ToString().Contains("include"))
+        public BcApiCartUpdateLine(IBcApi api) : base(api)
         {
-            Filter.Add("include", "line_items.physical_items.options,shipping_address,shipping_lines");
+            this.Add("include", "line_items.physical_items.options,shipping_address,shipping_lines");
+
         }
-        
-        return await Api.PutDataAsync<T>(
-            BcEndpoint.CartLineItemV3(cartId, lineId),
-            cartItems,
-            Filter,
-            Options,
-            cancellationToken
-        );
+
+
+
+        public Task<BcResultData<BcCartResponseFull>> SendAsync(
+      string cartId,
+      string lineId,
+      object cartItem,
+      CancellationToken cancellationToken = default
+  ) =>
+      SendAsync<BcCartResponseFull>(cartId, lineId, cartItem, cancellationToken);
+
+        public async Task<BcResultData<T>> SendAsync<T>(string cartId, string lineId, object cartItems, CancellationToken cancellationToken = default) =>
+            await Api.PutDataAsync<T>(
+                BcEndpoint.CartLineItemV3(cartId,lineId),
+                cartItems,
+                Filter,
+                Options,
+                cancellationToken
+            );
     }
 }

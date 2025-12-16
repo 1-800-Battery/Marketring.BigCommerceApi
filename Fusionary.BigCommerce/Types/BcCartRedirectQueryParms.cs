@@ -1,16 +1,27 @@
-namespace Fusionary.BigCommerce.Types;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public record BcCartRedirectQueryParms
+namespace Fusionary.BigCommerce.Types
 {
-    [JsonPropertyName("query_params")]
-    public QueryParams? QueryParameters { get; set; }
-
-    public record QueryParams
+    public record BcCartRedirectQueryParms
     {
-        [JsonPropertyName("key_1")]
-        public string? Key1 { get; set; }
 
-        [JsonPropertyName("key_2")]
-        public string? Key2 { get; set; }
+
+        [JsonPropertyName("query_params")]
+        public QueryParams? QueryParameters { get; set; }
+
+
+        public partial class QueryParams
+        {
+            [JsonPropertyName("key_1")]
+            public string? Key1 { get; set; }
+
+            [JsonPropertyName("key_2")]
+            public string? Key2 { get; set; }
+        }
+
     }
 }
