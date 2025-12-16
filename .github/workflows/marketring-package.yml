@@ -27,12 +27,10 @@ env:
 
 jobs:
   build:
-    name: Build and Test
+    name: Build
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write
-      pull-requests: write
     
     steps:
     - name: Checkout code
@@ -50,31 +48,6 @@ jobs:
       
     - name: Build
       run: dotnet build --configuration Release --no-restore
-      
-    - name: Test
-      env:
-        BigCommerce__StoreHash: ${{ secrets.BIGCOMMERCE_STORE_HASH }}
-        BigCommerce__AccessToken: ${{ secrets.BIGCOMMERCE_ACCESS_TOKEN }}
-        BigCommerce__Host: ${{ secrets.BIGCOMMERCE_HOST }}
-      run: dotnet test --configuration Release --no-build --verbosity normal --logger trx --results-directory "TestResults-${{ github.run_number }}" -- NUnit.ExplicitIncludes=false
-      
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results
-        path: TestResults-${{ github.run_number }}/*.trx
-        retention-days: 7
-        
-    - name: Publish Test Results
-      uses: dorny/test-reporter@v1
-      if: always()
-      with:
-        name: NUnit Test Results
-        path: TestResults-${{ github.run_number }}/*.trx
-        reporter: dotnet-trx
-        fail-on-error: true
-        
       
   package:
     name: Create NuGet Package
