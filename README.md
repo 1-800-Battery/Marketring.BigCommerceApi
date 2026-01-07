@@ -160,5 +160,41 @@ query paginateProducts {
 
 ## Publishing new version of the NuGet package
 
-1. Find the last tag used in the repository
-2. Run the Publish Nuget Package GitHub Action to create a new release and increment the version number
+### Automated Release Process
+
+The repository has automated workflows that handle package building, publishing, and GitHub release creation.
+
+#### Option 1: Automated Release via Tag (Recommended)
+
+When you push a tag with the `marketring-` prefix to the `main` branch, the workflow automatically:
+1. Builds the NuGet package
+2. Publishes to GitHub Packages
+3. Creates a GitHub release with release notes
+4. Attaches the NuGet package to the release
+
+**Steps:**
+1. Find the last tag used in the repository (e.g., `marketring-v1.2.2`)
+2. Create and push a new tag with the `marketring-` prefix:
+   ```bash
+   git tag marketring-v1.2.3
+   git push origin marketring-v1.2.3
+   ```
+3. The workflow will automatically trigger and create the release
+
+**Tag Format:**
+- Must start with `marketring-v` prefix
+- Follow semantic versioning: `marketring-v1.2.3` or `marketring-v1.2.3-preview.1`
+- Examples:
+  - `marketring-v1.2.3` (stable release)
+  - `marketring-v1.2.3-preview.1` (pre-release)
+
+#### Option 2: Manual Workflow Dispatch
+
+Alternatively, you can manually trigger the workflow:
+1. Go to **Actions** → **Build and Publish Marketring.BigCommerce**
+2. Click **Run workflow**
+3. Enter the version number (e.g., `1.2.3`)
+4. Select if it's a pre-release
+5. Click **Run workflow**
+
+**Note:** Manual dispatch does not automatically create a GitHub release. Use Option 1 for full automation including release creation.
