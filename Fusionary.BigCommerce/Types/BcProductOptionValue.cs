@@ -36,5 +36,6 @@ public record BcProductOptionValue : BcExtensionData
     /// checkbox type option requires a boolean flag, called checked_value, to determine which value is considered to
     /// be the checked state. If no data is available, returns null.
     /// </summary>
-    public Dictionary<string, string>? ValueData { get; set; }
+    [JsonPropertyName("value_data")]
+    public Dictionary<string, JsonElement>? ValueData { get; set; }
 }

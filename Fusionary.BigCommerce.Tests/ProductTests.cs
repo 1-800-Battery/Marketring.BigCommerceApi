@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Fusionary.BigCommerce;
 
 namespace Fusionary.BigCommerce.Tests;
 
@@ -139,6 +140,36 @@ public class ProductTests : BcTestBase
         LogMessage($"{id} | {name} | {price} | {customValues}");
 
         Assert.Pass();
+    }
+
+    [Test]
+    public async Task Can_Get_Product_Modifiers_For_Product_95710_Async()
+    {
+        var bc = Services.GetRequiredService<IBcApi>();
+        var cancellationToken = Cts.Token;
+
+        var productId = 95710;
+
+        var response = await bc
+            .Catalog()
+            .ProductModifiers()
+            .GetAll()
+            .SendAsync(productId, cancellationToken);
+
+        if (!response.Success)
+        {
+            DumpObject(response.Error);
+            Assert.Fail($"Failed to get product modifiers for product {productId}: {response.Error}");
+            return;
+        }
+
+        var (modifiers, pagination) = response;
+
+        LogMessage($"Retrieved {modifiers.Count} modifiers for product {productId}");
+        LogMessage($"Total available: {pagination.Total}");
+        DumpObject(modifiers);
+
+        Assert.Pass($"Successfully retrieved {modifiers.Count} modifiers for product {productId}");
     }
 
     private static async Task<List<BcProductFull>> GetRemainingDataAsync(
