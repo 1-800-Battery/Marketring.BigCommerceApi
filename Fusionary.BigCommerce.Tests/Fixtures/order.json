@@ -1,0 +1,25 @@
+{
+  "id": 1,
+  "customer_id": 0,
+  "status_id": 11,
+  "date_created": "Wed, 10 Jan 2018 21:05:30 +0000",
+  "date_modified": "2018-01-10T21:05:30Z",
+  "date_shipped": "",
+  "subtotal_ex_tax": "62.2000",
+  "total_ex_tax": "62.2000",
+  "total_inc_tax": 64.0,
+  "total_tax": "1.8",
+  "discount_amount": "0.0000",
+  "store_credit_amount": null,
+  "payment_status": null,
+  "items_total": 1,
+  "currency_code": "USD",
+  "billing_address": {
+    "first_name": "Example",
+    "last_name": "Customer",
+    "email": "customer@example.invalid"
+  },
+  "future_field": {
+    "enabled": true
+  }
+}

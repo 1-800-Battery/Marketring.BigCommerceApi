@@ -1,0 +1,30 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "email": "customer@example.invalid",
+      "first_name": "Example",
+      "last_name": "Customer",
+      "phone": "",
+      "company": "",
+      "customer_group_id": 0,
+      "date_created": "2026-01-01T00:00:00Z",
+      "date_modified": null,
+      "address_count": 0,
+      "attribute_count": 0,
+      "addresses": [],
+      "attributes": [],
+      "store_credit_amounts": [
+        {
+          "amount": "62.2"
+        }
+      ],
+      "origin_channel_id": null,
+      "channel_ids": [
+        1
+      ],
+      "future_field": true
+    }
+  ],
+  "meta": {}
+}
