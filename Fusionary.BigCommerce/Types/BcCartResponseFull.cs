@@ -179,7 +179,9 @@ namespace Fusionary.BigCommerce.Types
             [JsonPropertyName("discounts")]
             public List<object>? Discounts { get; set; }
 
+            /// <summary>Coupon entries, or a single JsonElement number when the API returns a scalar.</summary>
             [JsonPropertyName("coupons")]
+            [JsonConverter(typeof(BcCartCouponsConverter))]
             public List<object>? Coupons { get; set; }
 
             [JsonPropertyName("discount_amount")]
@@ -230,7 +232,9 @@ namespace Fusionary.BigCommerce.Types
 
         public partial class PromotionsClass
         {
+            /// <summary>Banner entries; an API object is represented by a single JsonElement.</summary>
             [JsonPropertyName("banners")]
+            [JsonConverter(typeof(BcCartBannersConverter))]
             public List<object>? Banners { get; set; }
         }
 

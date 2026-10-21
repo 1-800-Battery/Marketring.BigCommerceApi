@@ -122,13 +122,13 @@ public record BcOptionConfig : IBcExtensionData
     /// The lowest allowed value for a number option if number_limited is true.
     /// </summary>
     [JsonPropertyName("number_lowest_value")]
-    public int? NumberLowestValue { get; set; }
+    public decimal? NumberLowestValue { get; set; }
 
     /// <summary>
     /// The highest allowed value for a number option if number_limited is true.
     /// </summary>
     [JsonPropertyName("number_highest_value")]
-    public int? NumberHighestValue { get; set; }
+    public decimal? NumberHighestValue { get; set; }
 
     /// <summary>
     /// Flag to limit the input on a number option to whole numbers only.

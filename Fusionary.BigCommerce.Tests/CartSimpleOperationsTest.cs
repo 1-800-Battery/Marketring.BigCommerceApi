@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Fusionary.BigCommerce.Tests;
 
+[Explicit("Requires a configured test store; creates and mutates live carts")]
 public class CartSimpleOperationsTest : BcTestBase
 {
     private string? _createdCartId;
