@@ -28,7 +28,7 @@ public record BcResult
     public bool HasError => !string.IsNullOrWhiteSpace(Error?.Title);
 
     /// <summary>
-    /// The raw content of the API response.
+    /// The raw content of the API response. May contain sensitive data; do not use as a diagnostic/log field.
     /// </summary>
     [JsonIgnore]
     public string? ResponseText { get; init; }

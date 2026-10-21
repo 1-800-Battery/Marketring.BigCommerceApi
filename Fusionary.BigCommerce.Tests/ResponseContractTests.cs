@@ -73,7 +73,7 @@ public class ResponseContractTests
         var product = await ReadAsync<BcProductFull>(Fixture("product.json"));
         product.Success.Should().BeTrue();
         product.Data.Price.Value.Should().Be(62.2m);
-        product.Data.CostPrice.Should().BeNull();
+        product.Data.CostPrice.Value.Should().Be(0m);
         var customers = await ReadAsync<List<BcCustomer>>(Fixture("customers.json"));
         customers.Success.Should().BeTrue();
         customers.Data[0].StoreCreditAmounts![0].Amount.Value.Should().Be(62.2m);
@@ -93,6 +93,8 @@ public class ResponseContractTests
     [TestCase("1.8")]
     [TestCase("\"1.8\"")]
     [TestCase("9223372036854775808")]
+    [TestCase("1.000000000000000000000000000001")]
+    [TestCase("1e-100")]
     [TestCase("null")]
     public async Task Invalid_required_quantity_fails_without_rounding_Async(string number)
     {
@@ -147,6 +149,79 @@ public class ResponseContractTests
         result.Success.Should().BeFalse();
         BcJsonUtil.Serialize(result).Should().NotContain("private");
         result.Error.ErrorDetails["JsonPath"].Should().Be("$[redacted]");
+    }
+
+    [TestCase("1.8")]
+    [TestCase("\"1.8\"")]
+    public void Bulk_pricing_discounts_support_fractions(string value)
+    {
+        var pricing = BcJsonUtil.Deserialize<BcProductPricingBulkPricingItem>("{\"minimum\":1,\"maximum\":10,\"discount_amount\":" + value + ",\"discount_type\":\"price\"}")!;
+        Convert.ToDecimal(pricing.DiscountAmount).Should().Be(1.8m);
+    }
+
+    [TestCase("1")]
+    [TestCase("1.0")]
+    [TestCase("\"1.0\"")]
+    public void Flexible_ids_accept_integral_numbers(string value)
+    {
+        BcJsonUtil.Deserialize<BcId>(value).Value.Should().Be(1);
+    }
+
+    [TestCase("\"invalid\"")]
+    [TestCase("\"1.8\"")]
+    [TestCase("2147483648")]
+    public void Flexible_ids_reject_invalid_values(string value)
+    {
+        var read = () => BcJsonUtil.Deserialize<BcId>(value);
+        read.Should().Throw<JsonException>();
+    }
+
+    [Test]
+    public async Task Out_of_range_timestamps_keep_the_json_path_Async()
+    {
+        var result = await ReadAsync<BcCustomer>("{\"date_created\":9223372036854775807}");
+        result.Success.Should().BeFalse();
+        result.Error.Type.Should().Be(nameof(JsonException));
+        result.Error.ErrorDetails["JsonPath"].Should().Be("$.date_created");
+    }
+
+    [TestCase("\"2018-01-10T21:05:30Z\"")]
+    [TestCase("1515618330")]
+    [TestCase("\"Wed, 10 Jan 2018 21:05:30 +0000\"")]
+    [SetCulture("ar-SA")]
+    public void Dates_accept_supported_formats_independent_of_culture(string value)
+    {
+        var date = BcJsonUtil.Deserialize<BcDateTime>(value);
+        date.Value.Should().Be(new DateTimeOffset(2018, 1, 10, 21, 5, 30, TimeSpan.Zero));
+        date.ToRfc2822().Should().Be("Wed, 10 Jan 2018 21:05:30 +0000");
+    }
+
+    [Test]
+    public async Task V2_arrays_and_v3_metadata_survive_response_parsing_Async()
+    {
+        var orders = await ReadAsync<List<BcOrderResponseFull>>("[" + Fixture("order.json") + "]");
+        orders.Success.Should().BeTrue();
+        orders.Data.Should().ContainSingle();
+        using var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[{\"id\":1}],\"meta\":{\"count\":1.0}}", Encoding.UTF8, "application/json")
+        };
+        var result = await response.ReadResponseAsync<List<BcCustomer>, Dictionary<string, int>>();
+        result.Success.Should().BeTrue();
+        result.Meta["count"].Should().Be(1);
+    }
+
+    [Test]
+    public async Task Cancellation_propagates_to_the_caller_Async()
+    {
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+        using var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var read = () => response.ReadResponseAsync<BcCustomer, BcMetadataEmpty>(cancellation.Token);
+        await read.Should().ThrowAsync<OperationCanceledException>();
     }
 
     [Test]

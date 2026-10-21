@@ -37,7 +37,7 @@ public static class BcHttpResponseExtensions
             return null;
         }
 
-        var json = await response.Content
+        using var json = await response.Content
             .ReadFromJsonAsync<JsonDocument>(BcJsonUtil.JsonOptions, cancellationToken);
 
         if (json is null)
@@ -121,7 +121,7 @@ public static class BcHttpResponseExtensions
 
             return result;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             return new BcResult<TData, TMeta>
             {
@@ -131,13 +131,12 @@ public static class BcHttpResponseExtensions
                 {
                     Title = "Error reading response",
                     Status = response.StatusCode,
-                    Type = "Exception",
-                    ErrorDetails = new Dictionary<string, string> { { "Exception", ex.ToString() } }
+                    Type = ex.GetType().Name,
+                    ErrorDetails = BcDeserializationDiagnostics.Create<TData, TMeta>(ex)
                 },
                 ResponseText = await response.Content.ReadAsStringAsync(cancellationToken),
                 RequestMethod = response.RequestMessage?.Method,
-                RequestUri = response.RequestMessage?.RequestUri,
-                RequestBody = await ReadRequestBodyAsync(response, cancellationToken)
+                RateLimits = response.GetRateLimitHeaders()
             };
         }
     }
@@ -162,7 +161,7 @@ public static class BcHttpResponseExtensions
             };
         }
 
-        var json = await response.Content.ReadFromJsonAsync<JsonDocument>(BcJsonUtil.JsonOptions, cancellationToken);
+        using var json = await response.Content.ReadFromJsonAsync<JsonDocument>(BcJsonUtil.JsonOptions, cancellationToken);
 
         if (json is null)
         {

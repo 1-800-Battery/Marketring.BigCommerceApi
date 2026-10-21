@@ -27,7 +27,7 @@ public struct BcDateTime : IFormattable
     public BcDateTime(string? value)
     {
         Value = !string.IsNullOrWhiteSpace(value) &&
-                DateTimeOffset.TryParse(value, CultureInfo.CurrentCulture, out var result)
+                DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, out var result)
             ? result
             : default;
     }
@@ -54,7 +54,7 @@ public struct BcDateTime : IFormattable
 
     public string ToIso8601() => HasValue ? Value.ToString("o") : "";
 
-    public string ToRfc2822() => HasValue ? Value.ToString("ddd, dd MMM yyyy HH:mm:ss zzzz").Remove(29, 1) : "";
+    public string ToRfc2822() => HasValue ? Value.ToString("ddd, dd MMM yyyy HH:mm:ss zzzz", CultureInfo.InvariantCulture).Remove(29, 1) : "";
 
     public string ToString(string format) => HasValue ? Value.ToString(format) : "";
 

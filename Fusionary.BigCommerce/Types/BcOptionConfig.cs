@@ -79,7 +79,7 @@ public record BcOptionConfig : IBcExtensionData
     /// <summary>
     /// Flag to validate the length of a text or multi-line text input.
     /// </summary>
-    [JsonPropertyName("file_max_size_unit")]
+    [JsonPropertyName("text_characters_limited")]
     public bool? TextCharactersLimited { get; set; }
 
     /// <summary>
@@ -97,7 +97,7 @@ public record BcOptionConfig : IBcExtensionData
     /// <summary>
     /// Flag to validate the maximum number of lines allowed on a multi-line text input.
     /// </summary>
-    [JsonPropertyName("text_characters_limited")]
+    [JsonPropertyName("text_lines_limited")]
     public bool? TextLinesLimited { get; set; }
 
     /// <summary>

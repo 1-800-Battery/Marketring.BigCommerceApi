@@ -12,8 +12,11 @@ public static class BcJsonUtil
         DictionaryKeyPolicy = SnakeCaseNamingPolicy,
         Converters =
         {
-            new JsonStringEnumMemberConverter(SnakeCaseNamingPolicy),
-            new JsonStringEnumConverter(SnakeCaseNamingPolicy)
+            new BcResponseEnumConverter(),
+            new BcIntegerConverter<int>(),
+            new BcIntegerConverter<long>(),
+            new BcNullableDateConverter<BcDateTime>(),
+            new BcNullableDateConverter<BcDate>()
         },
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };

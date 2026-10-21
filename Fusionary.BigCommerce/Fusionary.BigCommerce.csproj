@@ -2,12 +2,26 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Title>Fusionary.BigCommerce</Title>
-    <Description>BigCommerce API client for Products, Brands, Categories, Orders and Storefront GraphQL</Description>
+    <Title>Marketring.BigCommerce</Title>
+    <PackageId>Marketring.BigCommerce</PackageId>
+    <Version>1.2.0</Version>
+    <MinVerSkip>true</MinVerSkip>
+    <Authors>Marketring;Fusionary</Authors>
+    <PackageProjectUrl>https://github.com/1-800-Battery/Marketring.BigCommerceApi</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/1-800-Battery/Marketring.BigCommerceApi</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>Correct decimal cart discounts and bulk pricing; tolerate numeric representations and future enums; improve safe deserialization diagnostics.</PackageReleaseNotes>
+    <Description>BigCommerce API client for Carts, Products, Brands, Categories, Customers, Orders and Storefront GraphQL</Description>
     <PackageTags>dotnet, bigcommerce</PackageTags>
     <UserSecretsId>1b8ee825-bb17-430b-881c-b6e56d684db3</UserSecretsId>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../LICENSE" Pack="true" PackagePath="" />
+    <None Include="../README.md" Pack="true" PackagePath="README.md" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="30.0.1" />

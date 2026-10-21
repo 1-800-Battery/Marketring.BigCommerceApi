@@ -27,7 +27,7 @@ public struct BcDate : IFormattable
     public BcDate(string? value)
     {
         Value = !string.IsNullOrWhiteSpace(value) &&
-                DateOnly.TryParse(value, CultureInfo.CurrentCulture, out var result)
+                DateOnly.TryParse(value, CultureInfo.InvariantCulture, out var result)
             ? result
             : default;
     }
@@ -71,7 +71,7 @@ public struct BcDate : IFormattable
 
     public string ToString(string format) => HasValue ? Value.ToString(format) : "";
 
-    public override string ToString() => HasValue ? Value.ToString("yyyy-MM-dd") : "";
+    public override string ToString() => HasValue ? Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "";
 
     public string ToString(string? format, IFormatProvider? formatProvider) =>
         HasValue ? Value.ToString(format, formatProvider) : "";
