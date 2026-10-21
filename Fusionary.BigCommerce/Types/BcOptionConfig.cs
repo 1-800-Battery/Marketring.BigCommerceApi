@@ -1,3 +1,6 @@
+using System.Buffers;
+using System.Text;
+
 namespace Fusionary.BigCommerce.Types;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -228,8 +231,8 @@ public record BcOptionConfig : IBcExtensionData
             // Check if the JSON token is a number
             if (reader.TokenType == JsonTokenType.Number)
             {
-                // Convert the number to a string
-                return reader.GetInt64().ToString();
+                // Preserve JSON numeric text exactly, independently of culture and numeric range.
+                return Encoding.UTF8.GetString(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
             }
             // Check if the JSON token is a string
             else if (reader.TokenType == JsonTokenType.String)

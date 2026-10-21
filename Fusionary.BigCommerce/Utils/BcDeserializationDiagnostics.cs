@@ -1,25 +1,27 @@
 using System.Collections;
 using System.Reflection;
+using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 
 namespace Fusionary.BigCommerce.Utils;
 
 internal static partial class BcDeserializationDiagnostics
 {
-    // Only model property names and numeric array indexes may leave the deserializer.
-    // Dictionary keys and malformed paths can contain customer-controlled text.
-    internal static Dictionary<string, string> Create<TData, TMeta>(Exception exception)
+    private static readonly DefaultJsonTypeInfoResolver DefaultResolver = new();
+
+    // Only JSON contract properties and numeric collection indexes may leave the deserializer.
+    // Validate against the type that actually failed, never an unrelated data/meta contract.
+    internal static Dictionary<string, string> Create(Exception exception, Type? targetType)
     {
         var path = exception is JsonException json ? json.Path : null;
         var safePath = "$";
         var field = "(root)";
         if (!string.IsNullOrEmpty(path) && path != "$")
         {
-            if (TryValidatePath(typeof(TData), path, out var dataField) ||
-                TryValidatePath(typeof(TMeta), path, out dataField))
+            if (targetType is not null && TryValidatePath(targetType, path, out var modelField))
             {
                 safePath = path;
-                field = dataField;
+                field = modelField;
             }
             else
             {
@@ -36,6 +38,12 @@ internal static partial class BcDeserializationDiagnostics
         };
     }
 
+    private static bool IsDictionary(Type type) =>
+        typeof(IDictionary).IsAssignableFrom(type) || type.GetInterfaces().Append(type).Any(candidate =>
+            candidate.IsGenericType &&
+            (candidate.GetGenericTypeDefinition() == typeof(IDictionary<,>) ||
+             candidate.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)));
+
     private static bool TryValidatePath(Type type, string path, out string field)
     {
         field = "(root)";
@@ -47,32 +55,45 @@ internal static partial class BcDeserializationDiagnostics
         foreach (var segment in PathSegmentPattern().Matches(path).Select(match => match.Value))
         {
             type = Nullable.GetUnderlyingType(type) ?? type;
+            if (IsDictionary(type))
+            {
+                return false;
+            }
+
+            var options = BcJsonUtil.JsonOptions;
+            var contract = (options.TypeInfoResolver ?? DefaultResolver).GetTypeInfo(type, options);
             if (segment[0] == '[')
             {
-                if (type.IsArray)
-                {
-                    type = type.GetElementType()!;
-                }
-                else if (type.IsGenericType && typeof(IEnumerable).IsAssignableFrom(type) && type.GetGenericArguments().Length == 1)
-                {
-                    type = type.GetGenericArguments()[0];
-                }
-                else
+                if (contract?.Kind != JsonTypeInfoKind.Enumerable)
                 {
                     return false;
                 }
+
+                var elementType = type.IsArray
+                    ? type.GetElementType()
+                    : type.GetInterfaces().Append(type)
+                        .FirstOrDefault(candidate => candidate.IsGenericType && candidate.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                        ?.GetGenericArguments()[0];
+                if (elementType is null)
+                {
+                    return false;
+                }
+
+                type = elementType;
             }
             else
             {
-                if (typeof(IDictionary).IsAssignableFrom(type))
+                if (contract?.Kind != JsonTypeInfoKind.Object)
                 {
                     return false;
                 }
 
                 var name = segment[1..];
-                var property = type.GetProperties(BindingFlags.Public | BindingFlags.Instance).FirstOrDefault(p =>
-                    (p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? BcJsonUtil.SnakeCaseNamingPolicy.ConvertName(p.Name)) == name);
-                if (property is null || property.IsDefined(typeof(JsonExtensionDataAttribute)))
+                var property = contract.Properties.FirstOrDefault(candidate => candidate.Name == name);
+                if (property is null || property.IsExtensionData ||
+                    property.Get is null && property.Set is null ||
+                    property.AttributeProvider is not PropertyInfo member || member.GetIndexParameters().Length != 0 ||
+                    typeof(IBcExtensionData).IsAssignableFrom(type) && member.Name == nameof(IBcExtensionData.ExtensionData))
                 {
                     return false;
                 }

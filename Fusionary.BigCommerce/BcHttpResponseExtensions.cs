@@ -115,9 +115,10 @@ public static class BcHttpResponseExtensions
         CancellationToken cancellationToken = default
     )
     {
+        var context = new ResponseReadContext();
         try
         {
-            var result = await ReadResponseInternalAsync<TData, TMeta>(response, cancellationToken);
+            var result = await ReadResponseInternalAsync<TData, TMeta>(response, context, cancellationToken);
 
             return result;
         }
@@ -132,7 +133,7 @@ public static class BcHttpResponseExtensions
                     Title = "Error reading response",
                     Status = response.StatusCode,
                     Type = ex.GetType().Name,
-                    ErrorDetails = BcDeserializationDiagnostics.Create<TData, TMeta>(ex)
+                    ErrorDetails = BcDeserializationDiagnostics.Create(ex, context.TargetType)
                 },
                 ResponseText = await response.Content.ReadAsStringAsync(cancellationToken),
                 RequestMethod = response.RequestMessage?.Method,
@@ -141,8 +142,14 @@ public static class BcHttpResponseExtensions
         }
     }
 
+    private sealed class ResponseReadContext
+    {
+        public Type? TargetType { get; set; }
+    }
+
     private static async Task<BcResult<TData, TMeta>> ReadResponseInternalAsync<TData, TMeta>(
         HttpResponseMessage response,
+        ResponseReadContext context,
         CancellationToken cancellationToken = default
     )
     {
@@ -172,7 +179,9 @@ public static class BcHttpResponseExtensions
 
         if (root.ValueKind == JsonValueKind.Array)
         {
+            context.TargetType = typeof(TData);
             var arrayData = root.Deserialize<TData>(BcJsonUtil.JsonOptions);
+            context.TargetType = null;
 
             return new BcResult<TData, TMeta>
             {
@@ -190,13 +199,16 @@ public static class BcHttpResponseExtensions
         root.TryGetProperty("data", out var dataProperty);
         root.TryGetProperty("meta", out var metaProperty);
 
+        context.TargetType = typeof(TMeta);
         var meta = metaProperty.ValueKind == JsonValueKind.Undefined
             ? default
             : metaProperty.Deserialize<TMeta>(BcJsonUtil.JsonOptions);
 
+        context.TargetType = typeof(TData);
         var data = dataProperty.ValueKind == JsonValueKind.Undefined
             ? root.Deserialize<TData>(BcJsonUtil.JsonOptions)
             : dataProperty.Deserialize<TData>(BcJsonUtil.JsonOptions);
+        context.TargetType = null;
 
         return new BcResult<TData, TMeta>
         {

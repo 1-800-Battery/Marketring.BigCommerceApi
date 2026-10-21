@@ -3,6 +3,7 @@
 These are reconstructed, redacted API-shaped examples, not raw production captures. Cart numbers preserve the reported decimal-zero and fractional-discount failure (`0.0`, `62.2`, `1.8`). Identifiers, names, addresses, URLs and email addresses are synthetic; reserved example domains replace store/customer data. No credentials or checkout tokens are included.
 
 - `cart.json`: v3 cart envelope, physical lines, discounts, nullable option values and unknown fields. Tests also exercise custom items, gift certificates and quoted monetary values.
+- `cart-numeric-discount-ids.json`: the cart shape with synthetic numeric promotion IDs, including an integer beyond binary floating-point precision. Numeric IDs also appear in the official cart OpenAPI discount examples.
 - `cart-promotions.json`: physical-item numeric and array coupons plus an object promotion banner, reconstructed from the official [cart OpenAPI](https://docs.bigcommerce.com/openapi/admin-management-carts.json).
 - `modifiers.json`: a numeric modifier with fractional lower/upper bounds, reconstructed from the official [modifier OpenAPI](https://docs.bigcommerce.com/openapi/admin-catalog-product-modifiers.json).
 - `checkout-urls.json`: cart redirect/embedded-checkout URLs, the checkout functionality currently exposed by this library. The library has no checkout resource model or CRUD endpoint; adding one is outside this fix.

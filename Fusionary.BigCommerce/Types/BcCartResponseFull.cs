@@ -75,6 +75,7 @@ namespace Fusionary.BigCommerce.Types
         public partial class Discount
         {
             [JsonPropertyName("id")]
+            [JsonConverter(typeof(BcOptionConfig.StringOrNumberConverter))]
             public string? Id { get; set; }
 
             [JsonPropertyName("discounted_amount")]
