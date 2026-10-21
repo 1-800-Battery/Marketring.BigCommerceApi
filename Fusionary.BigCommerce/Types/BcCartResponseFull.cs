@@ -33,10 +33,10 @@ namespace Fusionary.BigCommerce.Types
         public double BaseAmount { get; set; }
 
         [JsonPropertyName("discount_amount")]
-        public long DiscountAmount { get; set; }
+        public decimal DiscountAmount { get; set; }
 
         [JsonPropertyName("manual_discount_amount")]
-        public long ManualDiscountAmount { get; set; }
+        public decimal ManualDiscountAmount { get; set; }
 
         [JsonPropertyName("cart_amount")]
         public double CartAmount { get; set; }
@@ -75,10 +75,11 @@ namespace Fusionary.BigCommerce.Types
         public partial class Discount
         {
             [JsonPropertyName("id")]
+            [JsonConverter(typeof(BcOptionConfig.StringOrNumberConverter))]
             public string? Id { get; set; }
 
             [JsonPropertyName("discounted_amount")]
-            public long DiscountedAmount { get; set; }
+            public decimal DiscountedAmount { get; set; }
         }
 
         public partial class LineItemsClass
@@ -108,7 +109,7 @@ namespace Fusionary.BigCommerce.Types
             public long Quantity { get; set; }
 
             [JsonPropertyName("list_price")]
-            public long ListPrice { get; set; }
+            public decimal ListPrice { get; set; }
         }
 
         public partial class GiftCertificate
@@ -120,7 +121,7 @@ namespace Fusionary.BigCommerce.Types
             public string? Theme { get; set; }
 
             [JsonPropertyName("amount")]
-            public long Amount { get; set; }
+            public decimal Amount { get; set; }
 
             [JsonPropertyName("quantity")]
             public long Quantity { get; set; }
@@ -179,14 +180,16 @@ namespace Fusionary.BigCommerce.Types
             [JsonPropertyName("discounts")]
             public List<object>? Discounts { get; set; }
 
+            /// <summary>Coupon entries, or a single JsonElement number when the API returns a scalar.</summary>
             [JsonPropertyName("coupons")]
+            [JsonConverter(typeof(BcCartCouponsConverter))]
             public List<object>? Coupons { get; set; }
 
             [JsonPropertyName("discount_amount")]
-            public long DiscountAmount { get; set; }
+            public decimal DiscountAmount { get; set; }
 
             [JsonPropertyName("coupon_amount")]
-            public long CouponAmount { get; set; }
+            public decimal CouponAmount { get; set; }
 
             [JsonPropertyName("original_price")]
             public double OriginalPrice { get; set; }
@@ -230,11 +233,14 @@ namespace Fusionary.BigCommerce.Types
 
         public partial class PromotionsClass
         {
+            /// <summary>Banner entries; an API object is represented by a single JsonElement.</summary>
             [JsonPropertyName("banners")]
+            [JsonConverter(typeof(BcCartBannersConverter))]
             public List<object>? Banners { get; set; }
         }
 
 
-         public IDictionary<string, JsonElement>? ExtensionData { get; init; }
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? ExtensionData { get; init; }
     }
 }

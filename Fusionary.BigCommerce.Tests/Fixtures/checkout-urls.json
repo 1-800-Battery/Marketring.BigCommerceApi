@@ -1,0 +1,8 @@
+{
+  "data": {
+    "cart_url": "https://store.example/cart",
+    "checkout_url": "https://store.example/checkout",
+    "embedded_checkout_url": "https://store.example/embedded-checkout"
+  },
+  "meta": {}
+}

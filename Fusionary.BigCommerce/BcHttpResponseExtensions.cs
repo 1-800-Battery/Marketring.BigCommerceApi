@@ -37,7 +37,7 @@ public static class BcHttpResponseExtensions
             return null;
         }
 
-        var json = await response.Content
+        using var json = await response.Content
             .ReadFromJsonAsync<JsonDocument>(BcJsonUtil.JsonOptions, cancellationToken);
 
         if (json is null)
@@ -115,13 +115,14 @@ public static class BcHttpResponseExtensions
         CancellationToken cancellationToken = default
     )
     {
+        var context = new ResponseReadContext();
         try
         {
-            var result = await ReadResponseInternalAsync<TData, TMeta>(response, cancellationToken);
+            var result = await ReadResponseInternalAsync<TData, TMeta>(response, context, cancellationToken);
 
             return result;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             return new BcResult<TData, TMeta>
             {
@@ -131,19 +132,24 @@ public static class BcHttpResponseExtensions
                 {
                     Title = "Error reading response",
                     Status = response.StatusCode,
-                    Type = "Exception",
-                    ErrorDetails = new Dictionary<string, string> { { "Exception", ex.ToString() } }
+                    Type = ex.GetType().Name,
+                    ErrorDetails = BcDeserializationDiagnostics.Create(ex, context.TargetType)
                 },
                 ResponseText = await response.Content.ReadAsStringAsync(cancellationToken),
                 RequestMethod = response.RequestMessage?.Method,
-                RequestUri = response.RequestMessage?.RequestUri,
-                RequestBody = await ReadRequestBodyAsync(response, cancellationToken)
+                RateLimits = response.GetRateLimitHeaders()
             };
         }
     }
 
+    private sealed class ResponseReadContext
+    {
+        public Type? TargetType { get; set; }
+    }
+
     private static async Task<BcResult<TData, TMeta>> ReadResponseInternalAsync<TData, TMeta>(
         HttpResponseMessage response,
+        ResponseReadContext context,
         CancellationToken cancellationToken = default
     )
     {
@@ -162,7 +168,7 @@ public static class BcHttpResponseExtensions
             };
         }
 
-        var json = await response.Content.ReadFromJsonAsync<JsonDocument>(BcJsonUtil.JsonOptions, cancellationToken);
+        using var json = await response.Content.ReadFromJsonAsync<JsonDocument>(BcJsonUtil.JsonOptions, cancellationToken);
 
         if (json is null)
         {
@@ -173,7 +179,9 @@ public static class BcHttpResponseExtensions
 
         if (root.ValueKind == JsonValueKind.Array)
         {
+            context.TargetType = typeof(TData);
             var arrayData = root.Deserialize<TData>(BcJsonUtil.JsonOptions);
+            context.TargetType = null;
 
             return new BcResult<TData, TMeta>
             {
@@ -191,13 +199,16 @@ public static class BcHttpResponseExtensions
         root.TryGetProperty("data", out var dataProperty);
         root.TryGetProperty("meta", out var metaProperty);
 
+        context.TargetType = typeof(TMeta);
         var meta = metaProperty.ValueKind == JsonValueKind.Undefined
             ? default
             : metaProperty.Deserialize<TMeta>(BcJsonUtil.JsonOptions);
 
+        context.TargetType = typeof(TData);
         var data = dataProperty.ValueKind == JsonValueKind.Undefined
             ? root.Deserialize<TData>(BcJsonUtil.JsonOptions)
             : dataProperty.Deserialize<TData>(BcJsonUtil.JsonOptions);
+        context.TargetType = null;
 
         return new BcResult<TData, TMeta>
         {

@@ -6,13 +6,7 @@ public class BcIdConverter : JsonConverter<BcId>
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options
-    ) =>
-        reader switch
-        {
-            { TokenType: JsonTokenType.Number } => new BcId(reader.GetInt32()),
-            { TokenType: JsonTokenType.String } => new BcId(reader.GetString()),
-            _ => throw new JsonException()
-        };
+    ) => new BcId(new BcIntegerConverter<int>().Read(ref reader, typeof(int), options));
 
     public override void Write(
         Utf8JsonWriter writer,

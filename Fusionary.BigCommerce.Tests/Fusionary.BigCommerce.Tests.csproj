@@ -32,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Fixtures/**/*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Remove="appsettings.json" />
     <Content Include="appsettings.json" CopyToOutputDirectory="Always" />
     <None Remove="logo.png" />

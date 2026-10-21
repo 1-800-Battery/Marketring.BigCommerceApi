@@ -3,6 +3,7 @@ using Fusionary.BigCommerce;
 
 namespace Fusionary.BigCommerce.Tests;
 
+[Explicit("Requires a configured test store; may read or mutate live resources")]
 public class ProductTests : BcTestBase
 {
     [Test]

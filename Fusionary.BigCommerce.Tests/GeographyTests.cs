@@ -4,6 +4,7 @@ using Fusionary.BigCommerce.Operations.Product_Bulk_Pricing;
 
 namespace Fusionary.BigCommerce.Tests;
 
+[Explicit("Requires a configured test store; may read or mutate live resources")]
 public class GeographyTests : BcTestBase
 {
     [Test]

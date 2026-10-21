@@ -41,7 +41,7 @@ public readonly struct BcFloat : IFormattable, IComparable<BcFloat>
     {
         if (!string.IsNullOrEmpty(value))
         {
-            decimal.TryParse(value, out var result);
+            decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result);
             Value = result;
         }
         else

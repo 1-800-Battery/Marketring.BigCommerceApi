@@ -2,6 +2,7 @@ using GraphQL;
 
 namespace Fusionary.BigCommerce.Tests;
 
+[Explicit("Requires a configured test store; may read or mutate live resources")]
 public class StorefrontGraphQLTests : BcTestBase
 {
     [Test]

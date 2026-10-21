@@ -1,0 +1,24 @@
+{
+  "data": {
+    "id": 1,
+    "name": "Example product",
+    "type": "physical",
+    "sku": "example-1",
+    "weight": 1.8,
+    "price": "62.2",
+    "cost_price": 0.0,
+    "date_created": "2026-01-01T00:00:00Z",
+    "date_modified": "2026-01-01T00:00:00Z",
+    "preorder_release_date": null,
+    "inventory_tracking": "none",
+    "availability": "available",
+    "condition": "New",
+    "categories": [
+      1
+    ],
+    "variants": [],
+    "custom_fields": [],
+    "future_field": true
+  },
+  "meta": {}
+}

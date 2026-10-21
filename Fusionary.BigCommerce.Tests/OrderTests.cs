@@ -46,6 +46,7 @@ public class OrderTests : BcTestBase
         Console.WriteLine($"Tracking order {orderId} for cleanup");
     }
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Create_Order_Metafields_Async()
     {
         var orderMetafieldsApi = Services.GetRequiredService<BcApiOrderMetafields>();
@@ -102,6 +103,7 @@ public class OrderTests : BcTestBase
     }
 
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Create_Sample_Order_Async()
     {
         var createOrdersApi = Services.GetRequiredService<BcApiOrdersCreate>();
@@ -144,6 +146,7 @@ public class OrderTests : BcTestBase
     }
 
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Update_Sample_Order_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
@@ -224,6 +227,7 @@ public class OrderTests : BcTestBase
     #endregion
 
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Get_Cart_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
@@ -246,6 +250,7 @@ public class OrderTests : BcTestBase
     }
 
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Get_CartRedirects_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
@@ -288,6 +293,7 @@ public class OrderTests : BcTestBase
     }
 
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Delete_Cart_Line_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
@@ -329,6 +335,7 @@ public class OrderTests : BcTestBase
     }
 
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Get_All_Orders_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
@@ -360,6 +367,7 @@ public class OrderTests : BcTestBase
     }
 
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Get_Order_Metafields_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
@@ -387,6 +395,7 @@ public class OrderTests : BcTestBase
     }
 
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Get_Order_Shipping_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();
@@ -407,6 +416,7 @@ public class OrderTests : BcTestBase
     }
 
     [Test]
+    [Explicit("Requires a configured test store; may mutate orders or carts")]
     public async Task Can_Get_Order_With_Consignments_Async()
     {
         var bc = Services.GetRequiredService<IBcApi>();

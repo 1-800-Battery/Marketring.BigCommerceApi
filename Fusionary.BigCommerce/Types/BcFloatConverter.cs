@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Fusionary.BigCommerce.Types;
 
 public class BcFloatConverter : JsonConverter<BcFloat>
@@ -10,7 +12,7 @@ public class BcFloatConverter : JsonConverter<BcFloat>
         reader switch
         {
             { TokenType: JsonTokenType.Number } => new BcFloat(reader.GetDecimal()),
-            { TokenType: JsonTokenType.String } => new BcFloat(reader.GetString()),
+            { TokenType: JsonTokenType.String } when decimal.TryParse(reader.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value) => new BcFloat(value),
             _ => throw new JsonException()
         };
 

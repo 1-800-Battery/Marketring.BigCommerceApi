@@ -1,0 +1,21 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "product_id": 1,
+      "name": "example-number",
+      "display_name": "Example number",
+      "type": "numbers_only_text",
+      "required": false,
+      "config": {
+        "number_limited": true,
+        "number_limit_mode": "range",
+        "number_lowest_value": -1.25,
+        "number_highest_value": 62.20000000000001,
+        "number_integers_only": false
+      },
+      "option_values": []
+    }
+  ],
+  "meta": {}
+}

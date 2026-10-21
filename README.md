@@ -1,6 +1,12 @@
-# Fusionary.BigCommerceApi
+# Marketring.BigCommerceApi
 
-c# BigCommerce Api for DotNet
+BigCommerce API client for .NET 8, derived from Fusionary.BigCommerceApi.
+
+Version 1.2.0 corrects decimal cart discounts and response parsing. See [CHANGELOG.md](CHANGELOG.md) for compatibility notes, diagnostics behavior and upstream attribution.
+
+```sh
+dotnet add package Marketring.BigCommerce --version 1.2.0 --source https://nuget.pkg.github.com/1-800-Battery/index.json
+```
 
 ## Installation
 

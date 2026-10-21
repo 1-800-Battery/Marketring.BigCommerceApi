@@ -1,3 +1,6 @@
+using System.Buffers;
+using System.Text;
+
 namespace Fusionary.BigCommerce.Types;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -79,7 +82,7 @@ public record BcOptionConfig : IBcExtensionData
     /// <summary>
     /// Flag to validate the length of a text or multi-line text input.
     /// </summary>
-    [JsonPropertyName("file_max_size_unit")]
+    [JsonPropertyName("text_characters_limited")]
     public bool? TextCharactersLimited { get; set; }
 
     /// <summary>
@@ -97,7 +100,7 @@ public record BcOptionConfig : IBcExtensionData
     /// <summary>
     /// Flag to validate the maximum number of lines allowed on a multi-line text input.
     /// </summary>
-    [JsonPropertyName("text_characters_limited")]
+    [JsonPropertyName("text_lines_limited")]
     public bool? TextLinesLimited { get; set; }
 
     /// <summary>
@@ -122,13 +125,13 @@ public record BcOptionConfig : IBcExtensionData
     /// The lowest allowed value for a number option if number_limited is true.
     /// </summary>
     [JsonPropertyName("number_lowest_value")]
-    public int? NumberLowestValue { get; set; }
+    public decimal? NumberLowestValue { get; set; }
 
     /// <summary>
     /// The highest allowed value for a number option if number_limited is true.
     /// </summary>
     [JsonPropertyName("number_highest_value")]
-    public int? NumberHighestValue { get; set; }
+    public decimal? NumberHighestValue { get; set; }
 
     /// <summary>
     /// Flag to limit the input on a number option to whole numbers only.
@@ -228,8 +231,8 @@ public record BcOptionConfig : IBcExtensionData
             // Check if the JSON token is a number
             if (reader.TokenType == JsonTokenType.Number)
             {
-                // Convert the number to a string
-                return reader.GetInt64().ToString();
+                // Preserve JSON numeric text exactly, independently of culture and numeric range.
+                return Encoding.UTF8.GetString(reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan);
             }
             // Check if the JSON token is a string
             else if (reader.TokenType == JsonTokenType.String)
