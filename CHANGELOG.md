@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0
+
+- Add paged `SendDiagnosticAsync` on the existing transaction GET builder. `BcOrderTransactionDiagnostic` includes nullable decimal amounts, string payment method and gateway IDs, related transaction IDs that accept strings or numbers, and recorded outcome fields. `BcOrderTransaction` and the existing transaction `SendAsync` retain their original contracts.
+- Add `.Orders().OrderRefunds().Get().SendAsync(...)` for recorded refund, item and payment data, including decimal amounts, tolerant dates, and available payment decline codes and messages.
+- The new reads omit raw bodies and provider HTTP error text from results while retaining HTTP status and safe deserialization details.
+- Current order status describes current state only. This release adds no order status history, staff or system logs, shipment reads, app or account inventory, or gateway settings. Existing webhook GETs remain the supported webhook reads.
+
 ## 1.2.0
 
 ### Response handling

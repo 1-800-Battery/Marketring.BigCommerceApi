@@ -110,15 +110,21 @@ public static class BcHttpResponseExtensions
         );
     }
 
-    public static async Task<BcResult<TData, TMeta>> ReadResponseAsync<TData, TMeta>(
+    public static Task<BcResult<TData, TMeta>> ReadResponseAsync<TData, TMeta>(
         this HttpResponseMessage response,
         CancellationToken cancellationToken = default
+    ) => response.ReadResponseAsync<TData, TMeta>(false, cancellationToken);
+
+    internal static async Task<BcResult<TData, TMeta>> ReadResponseAsync<TData, TMeta>(
+        this HttpResponseMessage response,
+        bool omitSensitiveDetails,
+        CancellationToken cancellationToken
     )
     {
         var context = new ResponseReadContext();
         try
         {
-            var result = await ReadResponseInternalAsync<TData, TMeta>(response, context, cancellationToken);
+            var result = await ReadResponseInternalAsync<TData, TMeta>(response, context, omitSensitiveDetails, cancellationToken);
 
             return result;
         }
@@ -135,7 +141,7 @@ public static class BcHttpResponseExtensions
                     Type = ex.GetType().Name,
                     ErrorDetails = BcDeserializationDiagnostics.Create(ex, context.TargetType)
                 },
-                ResponseText = await response.Content.ReadAsStringAsync(cancellationToken),
+                ResponseText = omitSensitiveDetails ? null : await response.Content.ReadAsStringAsync(cancellationToken),
                 RequestMethod = response.RequestMessage?.Method,
                 RateLimits = response.GetRateLimitHeaders()
             };
@@ -150,6 +156,7 @@ public static class BcHttpResponseExtensions
     private static async Task<BcResult<TData, TMeta>> ReadResponseInternalAsync<TData, TMeta>(
         HttpResponseMessage response,
         ResponseReadContext context,
+        bool omitSensitiveDetails,
         CancellationToken cancellationToken = default
     )
     {
@@ -189,7 +196,7 @@ public static class BcHttpResponseExtensions
                 Data = arrayData!,
                 StatusCode = response.StatusCode,
                 RateLimits = rateLimits,
-                ResponseText = json.RootElement.GetRawText(),
+                ResponseText = omitSensitiveDetails ? null : root.GetRawText(),
                 RequestMethod = response.RequestMessage?.Method,
                 RequestUri = response.RequestMessage?.RequestUri,
                 RequestBody = await ReadRequestBodyAsync(response, cancellationToken)
@@ -217,7 +224,7 @@ public static class BcHttpResponseExtensions
             Meta = meta!,
             StatusCode = response.StatusCode,
             RateLimits = rateLimits,
-            ResponseText = json.RootElement.GetRawText(),
+            ResponseText = omitSensitiveDetails ? null : root.GetRawText(),
             RequestMethod = response.RequestMessage?.Method,
             RequestUri = response.RequestMessage?.RequestUri,
             RequestBody = await ReadRequestBodyAsync(response, cancellationToken)

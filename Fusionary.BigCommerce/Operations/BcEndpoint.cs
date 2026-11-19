@@ -73,6 +73,8 @@ public static class BcEndpoint
     public static string OrderProductsV2(BcId orderId, BcId productId) =>
         $"v2/orders/{orderId}/products/{productId}";
 
+    public static string OrderRefundsV3(BcId orderId) => $"v3/orders/{orderId}/payment_actions/refunds";
+
     public static string OrderShipmentsV2(BcId orderId) => $"v2/orders/{orderId}/shipments";
 
     public static string OrderShippingV2(BcId orderId) => $"v2/orders/{orderId}/shipping_addresses";
