@@ -37,7 +37,7 @@ public class BcApi : IBcApi
             )
             .ConfigureAwait(false);
 
-        if (_logger.IsEnabled(LogLevel.Trace))
+        if (options?.OmitSensitiveResponseDetails != true && _logger.IsEnabled(LogLevel.Trace))
         {
             var rq = response.RequestMessage?.ToString();
 
@@ -95,6 +95,7 @@ public class BcApi : IBcApi
     )
     {
         var response = await SendAsync(requestMessage, options, cancellationToken);
+        var omitSensitiveDetails = options?.OmitSensitiveResponseDetails == true;
 
         return response switch
         {
@@ -103,7 +104,15 @@ public class BcApi : IBcApi
                 { StatusCode: HttpStatusCode.Accepted } or
                 { StatusCode: HttpStatusCode.NoContent } or
                 { StatusCode: HttpStatusCode.MultiStatus } =>
-                await response.ReadResponseAsync<TResult, TMeta>(cancellationToken),
+                await response.ReadResponseAsync<TResult, TMeta>(omitSensitiveDetails, cancellationToken),
+            _ when omitSensitiveDetails => new BcResult<TResult, TMeta>
+            {
+                StatusCode = response.StatusCode,
+                Error = new BcErrorDetails { Status = response.StatusCode, Title = "BigCommerce request failed" },
+                RateLimits = response.GetRateLimitHeaders(),
+                RequestMethod = response.RequestMessage?.Method,
+                RequestUri = response.RequestMessage?.RequestUri
+            },
             _ => await response.ReadErrorResponseAsync<TResult, TMeta>(cancellationToken)
         };
     }

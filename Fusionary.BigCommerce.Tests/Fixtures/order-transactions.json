@@ -1,0 +1,68 @@
+{
+  "data": [
+    {
+      "id": 101,
+      "order_id": "5001",
+      "event": "authorization",
+      "method": "credit_card",
+      "amount": 62.2,
+      "currency": "USD",
+      "gateway": "stripe",
+      "gateway_transaction_id": "gw_txn_example_0001",
+      "date_created": "2026-01-10T21:05:30+00:00",
+      "test": false,
+      "status": "ok",
+      "fraud_review": false,
+      "reference_transaction_id": null,
+      "payment_method_id": "stripev3.card",
+      "payment_instrument_token": "instrument-token-redacted",
+      "avs_result": { "code": "Y", "message": "Synthetic AVS message", "street_match": "Y", "postal_match": "Y" },
+      "cvv_result": { "code": "M", "message": "Synthetic CVV message" },
+      "credit_card": { "card_type": "visa", "card_iin": "000000", "card_last4": "0000", "card_expiry_month": 12, "card_expiry_year": 2030 },
+      "custom": { "payment_method": "Synthetic manual payment" },
+      "offline": { "display_name": "Synthetic offline payment" },
+      "future_field": { "nested": ["unknown", 1, true] }
+    },
+    {
+      "id": 102,
+      "order_id": "5001",
+      "event": "capture",
+      "method": "credit_card",
+      "amount": "62.20",
+      "currency": "USD",
+      "gateway": "stripe",
+      "gateway_transaction_id": null,
+      "date_created": "Sun, 11 Jan 2026 09:15:00 +0000",
+      "test": false,
+      "status": "error",
+      "fraud_review": false,
+      "reference_transaction_id": 101,
+      "payment_method_id": "stripev3.card",
+      "avs_result": null,
+      "cvv_result": null,
+      "credit_card": null
+    },
+    {
+      "id": 103,
+      "order_id": 5001,
+      "event": "future_event",
+      "method": "future_method",
+      "amount": 0.1,
+      "currency": "USD",
+      "gateway": "future_gateway",
+      "date_created": "",
+      "status": "future_status",
+      "reference_transaction_id": "101"
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "total": 4,
+      "count": 3,
+      "per_page": 3,
+      "current_page": 1,
+      "total_pages": 2,
+      "links": { "current": "?page=1&limit=3", "next": "?page=2&limit=3" }
+    }
+  }
+}

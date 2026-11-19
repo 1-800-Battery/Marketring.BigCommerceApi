@@ -1,0 +1,36 @@
+{
+  "data": [
+    {
+      "id": 21,
+      "order_id": 5001,
+      "user_id": 0,
+      "created": "2026-01-12T10:00:00+00:00",
+      "reason": "Synthetic refund reason",
+      "total_amount": 12.34,
+      "total_tax": "0.99",
+      "uses_merchant_override_values": false,
+      "items": [
+        { "item_type": "PRODUCT", "item_id": 7001, "reason": "Synthetic item reason", "quantity": 1, "requested_amount": "12.34" }
+      ],
+      "payments": [
+        { "id": 31, "provider_id": "stripev3", "amount": 12.34, "offline": false, "is_declined": true, "declined_code": "example_decline", "declined_message": "Synthetic decline message" }
+      ],
+      "future_field": "ignored"
+    },
+    {
+      "id": 22,
+      "order_id": "5001",
+      "created": null,
+      "total_amount": "0.01",
+      "total_tax": 0,
+      "items": [
+        { "item_type": "FUTURE_ITEM_TYPE", "item_id": 5001, "quantity": null, "requested_amount": 0.01 }
+      ],
+      "payments": [
+        { "id": 32, "provider_id": "storecredit", "amount": "0.01", "offline": true, "is_declined": false, "declined_code": null, "declined_message": null },
+        { "id": 33, "provider_id": null, "amount": null }
+      ]
+    }
+  ],
+  "meta": {}
+}

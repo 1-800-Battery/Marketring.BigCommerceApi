@@ -10,6 +10,8 @@ public class BcApiOrdersOverview(IBcApi api) : IBcApiOperation
 
     public BcApiOrderProducts OrderProducts() => new(api);
 
+    public BcApiOrderRefunds OrderRefunds() => new(api);
+
     public BcApiOrderShipments OrderShipments() => new(api);
 
     public BcApiOrderShipping OrderShipping() => new(api);

@@ -15,4 +15,16 @@ public class BcApiOrderTransactionsGet(IBcApi api) : BcRequestBuilder(api), IBcA
             Options,
             cancellationToken
         );
+
+    /// <summary>Gets a page of recorded transactions with amounts and payment identifiers.</summary>
+    public Task<BcResultPaged<BcOrderTransactionDiagnostic>> SendDiagnosticAsync(
+        BcId orderId,
+        CancellationToken cancellationToken = default
+    ) =>
+        Api.GetPagedAsync<BcOrderTransactionDiagnostic>(
+            BcEndpoint.OrderTransactionsV3(orderId),
+            Filter,
+            Options with { OmitSensitiveResponseDetails = true },
+            cancellationToken
+        );
 }

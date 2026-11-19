@@ -2,10 +2,10 @@
 
 BigCommerce API client for .NET 8, derived from Fusionary.BigCommerceApi.
 
-Version 1.2.0 corrects decimal cart discounts and response parsing. See [CHANGELOG.md](CHANGELOG.md) for compatibility notes, diagnostics behavior and upstream attribution.
+Version 1.3.0 adds typed order transaction diagnostics and refund history reads. See [CHANGELOG.md](CHANGELOG.md) for release and compatibility notes.
 
 ```sh
-dotnet add package Marketring.BigCommerce --version 1.2.0 --source https://nuget.pkg.github.com/1-800-Battery/index.json
+dotnet add package Marketring.BigCommerce --version 1.3.0 --source https://nuget.pkg.github.com/1-800-Battery/index.json
 ```
 
 ## Installation
@@ -164,6 +164,22 @@ query paginateProducts {
 
 ```
 
+## Reading order payment diagnostics
+
+```csharp
+var transactions = await bc.Orders().OrderTransactions().Get()
+    .Page(1).Limit(50).SendDiagnosticAsync(orderId, cancellationToken);
+
+var refunds = await bc.Orders().OrderRefunds().Get()
+    .SendAsync(orderId, cancellationToken);
+```
+
+`SendDiagnosticAsync` returns a `BcResultPaged<BcOrderTransactionDiagnostic>` with decimal amounts, string payment method and gateway IDs, related transaction IDs, and transaction outcome fields. Use `HasNextPage` and `.Page(...)` to request another page. Existing `SendAsync` calls still return `BcOrderTransaction` with the original contract.
+
+The refund GET returns recorded refunds with typed items and payments, including provider ID, declined status, and decline code and message when present. Both reads use nullable decimal amounts and tolerate quoted numeric money and missing values. The SDK omits raw response bodies and unfiltered HTTP error text for these reads. Select the fields you need before logging or exposing results. Payment tokens, card results and provider messages can contain sensitive information.
+
+Current order status is a snapshot and does not establish when a status changed or who changed it. This release adds no order status history, staff or system logs, shipment reads, app or account inventory, or gateway settings. Use the existing `.Webhooks().Get()` and `.Webhooks().GetAll()` operations for webhook reads.
+
 ## Publishing new version of the NuGet package
 
 ### Automated Release Process
@@ -182,24 +198,24 @@ When you push a tag with the `marketring-` prefix to the `main` branch, the work
 1. Find the last tag used in the repository (e.g., `marketring-v1.2.2`)
 2. Create and push a new tag with the `marketring-` prefix:
    ```bash
-   git tag marketring-v1.2.3
-   git push origin marketring-v1.2.3
+   git tag marketring-v1.3.0
+   git push origin marketring-v1.3.0
    ```
 3. The workflow will automatically trigger and create the release
 
 **Tag Format:**
 - Must start with `marketring-v` prefix
-- Follow semantic versioning: `marketring-v1.2.3` or `marketring-v1.2.3-preview.1`
+- Follow semantic versioning: `marketring-v1.3.0` or `marketring-v1.3.0-preview.1`
 - Examples:
-  - `marketring-v1.2.3` (stable release)
-  - `marketring-v1.2.3-preview.1` (pre-release)
+  - `marketring-v1.3.0` (stable release)
+  - `marketring-v1.3.0-preview.1` (pre-release)
 
 #### Option 2: Manual Workflow Dispatch
 
 Alternatively, you can manually trigger the workflow:
 1. Go to **Actions** → **Build and Publish Marketring.BigCommerce**
 2. Click **Run workflow**
-3. Enter the version number (e.g., `1.2.3`)
+3. Enter the version number (e.g., `1.3.0`)
 4. Select if it's a pre-release
 5. Click **Run workflow**
 
